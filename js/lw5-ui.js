@@ -1380,6 +1380,7 @@
                   '<div class="lw5-dialog-section">' +
                     '<div class="lw5-dialog-section-title">Common</div>' +
                     '<div class="lw5-dialog-row"><label>Margin</label><input type="number" id="lw5-pp-margin" value="' + tp.margin + '" step="0.01" class="lw5-dialog-num" style="width:80px" /></div>' +
+                    '<div class="lw5-dialog-row"><label>Spot Dia</label><input type="number" id="lw5-pp-laserDia" value="' + (tp.laserDiameter || 0.5) + '" step="0.01" class="lw5-dialog-num" style="width:80px" /></div>' +
                     '<div class="lw5-dialog-row"><label>Segment Len</label><input type="number" id="lw5-pp-seg" value="' + tp.segmentLength + '" step="0.5" class="lw5-dialog-num" style="width:80px" /></div>' +
                     '<div class="lw5-dialog-row"><label class="lw5-dialog-check"><input type="checkbox" id="lw5-pp-trim" ' + (tp.trimLine ? 'checked' : '') + ' /> Trim Line</label></div>' +
                   '</div>' +
@@ -1398,7 +1399,7 @@
                   '</div>' +
                   '<div class="lw5-dialog-section lw5-pp-mill" style="' + (isMill ? '' : 'display:none') + '">' +
                     '<div class="lw5-dialog-section-title">Tool</div>' +
-                    '<div class="lw5-dialog-row"><label>Diameter</label><input type="number" id="lw5-pp-toolDia" value="' + (tp.toolDiameter || 3) + '" step="0.1" class="lw5-dialog-num" style="width:80px" /></div>' +
+                    '<div class="lw5-dialog-row"><label>Diameter</label><input type="number" id="lw5-pp-toolDia" value="' + (tp.toolDiameter || 6.35) + '" step="0.1" class="lw5-dialog-num" style="width:80px" /></div>' +
                     '<div class="lw5-dialog-row"><label>Step Over</label><input type="number" id="lw5-pp-stepOver" value="' + (tp.stepOver || 10) + '" class="lw5-dialog-num" style="width:80px" /><span style="font-size:11px;color:var(--text-muted)">%</span></div>' +
                     '<div class="lw5-dialog-row"><label>Plunge</label><input type="number" id="lw5-pp-plungeRate" value="' + (tp.plungeRate || 300) + '" class="lw5-dialog-num" style="width:80px" /></div>' +
                     '<div class="lw5-dialog-row"><label>Rapid Z</label><input type="number" id="lw5-pp-millRapidZ" value="' + (tp.millRapidZ || 10) + '" class="lw5-dialog-num" style="width:80px" /></div>' +
@@ -1430,6 +1431,7 @@
         speed: parseFloat($('#lw5-pp-speed').val()),
         passes: parseInt($('#lw5-pp-passes').val()) || 1,
         margin: parseFloat($('#lw5-pp-margin').val()) || 0,
+        laserDiameter: parseFloat($('#lw5-pp-laserDia').val()) || 0.5,
         segmentLength: parseFloat($('#lw5-pp-seg').val()) || 1,
         trimLine: $('#lw5-pp-trim').is(':checked'),
         dpi: parseInt($('#lw5-pp-dpi').val()) || 250,
@@ -1444,7 +1446,7 @@
         diagonal: $('#lw5-pp-diagonal').is(':checked'),
         smoothing: $('#lw5-pp-smooth').is(':checked'),
         overScan: parseFloat($('#lw5-pp-overscan').val()) || 0,
-        toolDiameter: parseFloat($('#lw5-pp-toolDia').val()) || 3,
+        toolDiameter: parseFloat($('#lw5-pp-toolDia').val()) || 6.35,
         stepOver: parseFloat($('#lw5-pp-stepOver').val()) || 10,
         plungeRate: parseFloat($('#lw5-pp-plungeRate').val()) || 300,
         passDepth: parseFloat($('#lw5-pp-passDepth').val()) || 1,
