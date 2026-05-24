@@ -37,7 +37,7 @@
             <input type="number" id="lw5-dialog-copies" value="1" min="1" max="999" class="lw5-dialog-num" />\
           </div>\
           <div class="lw5-dialog-row">\
-            <label>Power</label>\
+            <label>Laser Power</label>\
             <input type="range" id="lw5-dialog-power" min="1" max="100" value="100" class="lw5-dialog-range" />\
             <span class="lw5-dialog-range-val" id="lw5-dialog-power-val">100%</span>\
           </div>\

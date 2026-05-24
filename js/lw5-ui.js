@@ -1351,7 +1351,7 @@
                 '</div>' +
               '</div>' +
               '<div class="lw5-dialog-section">' +
-                '<div class="lw5-dialog-section-title">Laser</div>' +
+                '<div class="lw5-dialog-section-title">Power &amp; Speed</div>' +
                 '<div class="lw5-dialog-row">' +
                   '<label>Power</label>' +
                   '<input type="range" class="lw5-dialog-range" id="lw5-pp-power" min="0" max="100" value="' + tp.power + '" />' +
@@ -1379,7 +1379,7 @@
                 '<div id="lw5-pp-advanced" style="display:none;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">' +
                   '<div class="lw5-dialog-section">' +
                     '<div class="lw5-dialog-section-title">Common</div>' +
-                    '<div class="lw5-dialog-row"><label>Kerf</label><input type="number" id="lw5-pp-margin" value="' + tp.margin + '" step="0.01" class="lw5-dialog-num" style="width:80px" /></div>' +
+                    '<div class="lw5-dialog-row"><label>Margin</label><input type="number" id="lw5-pp-margin" value="' + tp.margin + '" step="0.01" class="lw5-dialog-num" style="width:80px" /></div>' +
                     '<div class="lw5-dialog-row"><label>Segment Len</label><input type="number" id="lw5-pp-seg" value="' + tp.segmentLength + '" step="0.5" class="lw5-dialog-num" style="width:80px" /></div>' +
                     '<div class="lw5-dialog-row"><label class="lw5-dialog-check"><input type="checkbox" id="lw5-pp-trim" ' + (tp.trimLine ? 'checked' : '') + ' /> Trim Line</label></div>' +
                   '</div>' +
