@@ -36,16 +36,6 @@
             <label>Copies</label>\
             <input type="number" id="lw5-dialog-copies" value="1" min="1" max="999" class="lw5-dialog-num" />\
           </div>\
-          <div class="lw5-dialog-row">\
-            <label>Laser Power</label>\
-            <input type="range" id="lw5-dialog-power" min="1" max="100" value="100" class="lw5-dialog-range" />\
-            <span class="lw5-dialog-range-val" id="lw5-dialog-power-val">100%</span>\
-          </div>\
-          <div class="lw5-dialog-row">\
-            <label>Speed</label>\
-            <input type="range" id="lw5-dialog-speed" min="10" max="100" value="100" class="lw5-dialog-range" />\
-            <span class="lw5-dialog-range-val" id="lw5-dialog-speed-val">100%</span>\
-          </div>\
         </div>\
         <!-- Output -->\
         <div class="lw5-dialog-section">\
@@ -108,12 +98,6 @@
         });
 
         $overlay.find('#lw5-dialog-copies').on('change', updateJobDetails);
-        $overlay.find('#lw5-dialog-power').on('input', function () {
-            $overlay.find('#lw5-dialog-power-val').text($(this).val() + '%');
-        });
-        $overlay.find('#lw5-dialog-speed').on('input', function () {
-            $overlay.find('#lw5-dialog-speed-val').text($(this).val() + '%');
-        });
 
         $overlay.find('#lw5-dialog-output').on('change', function () {
             var val = $(this).val();
@@ -205,8 +189,6 @@
         try {
             var machine = LW.profiles.getCurrentMachine();
             var copies = parseInt(dialog.$overlay.find('#lw5-dialog-copies').val()) || 1;
-            var powerOverride = parseInt(dialog.$overlay.find('#lw5-dialog-power').val()) || 100;
-            var speedOverride = parseInt(dialog.$overlay.find('#lw5-dialog-speed').val()) || 100;
             var outputMode = dialog.$overlay.find('#lw5-dialog-output').val();
             var endpointUrl = dialog.$overlay.find('#lw5-dialog-endpoint-url').val();
 
@@ -343,12 +325,6 @@
                     });
                 }
                 ops = expanded;
-            }
-            if (powerOverride !== 100) {
-                ops.forEach(function (op) { op.laserPower = Math.round(op.laserPower * powerOverride / 100); });
-            }
-            if (speedOverride !== 100) {
-                ops.forEach(function (op) { op.cutRate = Math.round(op.cutRate * speedOverride / 100); });
             }
 
             var origOps = LW.getState().operations;
