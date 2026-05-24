@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LaserWeb5 — CAM Application</title>
+  <link rel="icon" href="favicon.ico" />
+
+  <!-- Font Awesome 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="stylesheet" href="css/lw5.css" />
+</head>
+<body>
+  <div id="lw5-root">
+    <!-- Top Menu Bar -->
+    <header id="lw5-topbar">
+      <div class="lw5-topbar-left">
+        <span class="lw5-brand">LaserWeb5</span>
+        <span class="lw5-topbar-sep"></span>
+        <div class="lw5-topbar-menu">
+          <button class="lw5-topbar-btn" id="tb-file"><i class="fas fa-folder-open"></i><span> File</span></button>
+          <div class="lw5-dropdown" id="tb-file-menu" style="display:none">
+            <button class="lw5-dropdown-item" data-action="open"><i class="fas fa-file-import"></i> Open File</button>
+            <button class="lw5-dropdown-item" data-action="clear"><i class="fas fa-eraser"></i> Clear Design</button>
+            <hr class="lw5-dropdown-sep" />
+            <button class="lw5-dropdown-item" data-action="export-json"><i class="fas fa-download"></i> Export Design as JSON</button>
+            <button class="lw5-dropdown-item" data-action="import-json"><i class="fas fa-upload"></i> Import Design from JSON</button>
+          </div>
+        </div>
+        <div class="lw5-topbar-menu">
+          <button class="lw5-topbar-btn" id="tb-edit"><i class="fas fa-pen"></i><span> Edit</span></button>
+          <div class="lw5-dropdown" id="tb-edit-menu" style="display:none">
+            <button class="lw5-dropdown-item" data-action="cut"><i class="fas fa-cut"></i> Cut</button>
+            <button class="lw5-dropdown-item" data-action="copy"><i class="fas fa-copy"></i> Copy</button>
+            <button class="lw5-dropdown-item" data-action="paste"><i class="fas fa-paste"></i> Paste</button>
+            <button class="lw5-dropdown-item" data-action="delete"><i class="fas fa-trash"></i> Delete</button>
+            <hr class="lw5-dropdown-sep" />
+            <button class="lw5-dropdown-item" data-action="preferences"><i class="fas fa-cogs"></i> Preferences</button>
+            <hr class="lw5-dropdown-sep" />
+            <button class="lw5-dropdown-item" data-action="materials"><i class="fas fa-database"></i> Materials</button>
+          </div>
+        </div>
+      </div>
+      <div class="lw5-topbar-center">
+      </div>
+      <div class="lw5-topbar-right">
+        <button id="btn-generate" class="lw5-topbar-btn lw5-btn-attention" style="background:var(--accent);color:#fff;border-radius:var(--radius-sm);padding:6px 16px" title="Print — Generate G-Code (Ctrl+P)">
+          <i class="fas fa-print"></i> Print
+        </button>
+        <span class="lw5-topbar-sep"></span>
+        <button class="lw5-topbar-btn" id="btn-view-gcode" title="View G-Code"><i class="fas fa-eye"></i></button>
+        <button class="lw5-topbar-btn" id="btn-save-gcode" title="Save G-Code"><i class="fas fa-floppy-disk"></i></button>
+        <button class="lw5-topbar-btn" id="btn-load-gcode" title="Load G-Code"><i class="fas fa-folder-open"></i></button>
+        <span class="lw5-topbar-sep"></span>
+        <button class="lw5-topbar-btn" id="tb-undo" title="Undo (Ctrl+Z)"><i class="fas fa-undo"></i></button>
+        <button class="lw5-topbar-btn" id="tb-redo" title="Redo (Ctrl+Shift+Z)"><i class="fas fa-redo"></i></button>
+        <span class="lw5-topbar-sep"></span>
+        <button class="lw5-topbar-btn" id="tb-about" title="About"><i class="fas fa-question-circle"></i></button>
+      </div>
+    </header>
+
+    <!-- Hidden file input -->
+    <input type="file" id="file-input" multiple
+      accept=".svg,.dxf,.png,.jpg,.jpeg,.bmp,.gif,.gcode,.g,.tap,.gc,.nc"
+      style="display:none" />
+    <input type="file" id="gcode-file-input" accept=".gcode,.gc,.nc" style="display:none" />
+    <input type="file" id="json-file-input" accept=".json" style="display:none" />
+
+    <div class="lw5-body">
+      <!-- Left Tool Palette -->
+      <nav id="lw5-toolbar" class="lw5-toolbar">
+        <div class="lw5-tool-group">
+          <button class="lw5-tool-btn active" data-tool="select" title="Select / Pointer (V)">
+            <i class="fas fa-mouse-pointer"></i>
+          </button>
+          <button class="lw5-tool-btn" data-tool="tab" title="Add Tab / Bridge (T)">
+            <i class="fas fa-link"></i>
+          </button>
+        </div>
+        <div class="lw5-tool-spacer"></div>
+        <div class="lw5-tool-group">
+          <button class="lw5-tool-btn lw5-tool-color" id="tb-fill-color" title="Fill color" style="color:#4c9aff">
+            <i class="fas fa-palette"></i>
+          </button>
+        </div>
+      </nav>
+
+      <!-- Workspace (Design 2D / GCode 3D) -->
+      <div id="lw5-workspace" class="lw5-workspace">
+        <div class="lw5-workspace-tabs">
+          <button class="lw5-wtab active" data-view="design"><i class="fas fa-pencil-ruler"></i> Design</button>
+        </div>
+        <div id="lw5-transform-bar" class="lw5-transform-bar" style="display:none">
+          <div class="lw5-tf-group"><label>X</label><input type="number" id="tf-x" step="0.1" /></div>
+          <div class="lw5-tf-group"><label>Y</label><input type="number" id="tf-y" step="0.1" /></div>
+          <div class="lw5-tf-group"><label>W</label><input type="number" id="tf-w" step="0.1" /></div>
+          <div class="lw5-tf-group"><label>H</label><input type="number" id="tf-h" step="0.1" /></div>
+          <div class="lw5-tf-sep"></div>
+          <div class="lw5-tf-group"><label>Rot</label><input type="number" id="tf-rot" step="1" /></div>
+          <div class="lw5-tf-sep"></div>
+          <div class="lw5-tf-group">
+            <button class="lw5-tf-lock" id="tf-lock" title="Lock aspect ratio"><i class="fas fa-link"></i></button>
+          </div>
+        </div>
+        <canvas id="lw5-canvas-2d" class="lw5-view-canvas active"></canvas>
+        <div id="lw5-floating-controls" class="lw5-floating-controls"></div>
+        <div id="gcode-progress" style="display:none;position:absolute;bottom:8px;left:8px;right:8px;z-index:10"></div>
+      </div>
+
+      <!-- Panel overlay (mobile) -->
+      <div id="lw5-panel-overlay" class="lw5-panel-overlay"></div>
+
+    </div>
+    </div>
+
+    <!-- Bottom Status Bar -->
+    <footer id="lw5-statusbar">
+      <div class="lw5-status-left">
+        <span id="status-mode">Tool: Select</span>
+        <span class="lw5-status-sep"></span>
+        <span id="status-selection">Nothing selected</span>
+      </div>
+      <div class="lw5-status-right">
+        <span id="status-zoom">Zoom: 100%</span>
+        <span class="lw5-status-sep"></span>
+        <label class="lw5-status-toggle"><input type="checkbox" id="toggle-overlay" checked /> Overlay</label>
+        <label class="lw5-status-toggle"><input type="checkbox" id="toggle-docs" checked /> Docs</label>
+        <label class="lw5-status-toggle"><input type="checkbox" id="toggle-gcode" checked /> GCode</label>
+        <label class="lw5-status-toggle"><input type="checkbox" id="toggle-laser" /> Laser</label>
+        <label class="lw5-status-toggle"><input type="checkbox" id="toggle-machine" checked /> Machine</label>
+      </div>
+    </footer>
+  </div>
+
+  <!-- ========== Vendors (must load first) ========== -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="vendors/clipper-lib.js"></script>
+  <script src="vendors/poly2tri.js"></script>
+  <script src="vendors/queue.js"></script>
+  <script src="vendors/dxf-parser.js"></script>
+  <script src="vendors/marked.js"></script>
+  <script src="vendors/lw.svg-path.js"></script>
+  <script src="vendors/lw.svg-curves.js"></script>
+  <script src="vendors/lw.raster-to-gcode.js"></script>
+  <script src="vendors/snap.svg.js"></script>
+  <script src="vendors/web-cam-cpp.js"></script>
+
+  <!-- ========== LaserWeb5 core modules (load in order) ========== -->
+  <script src="js/lw5-state.js"></script>
+  <script src="js/lw5-profiles.js"></script>
+  <script src="js/lw5-mesh.js"></script>
+  <script src="js/lw5-cam.js"></script>
+  <script src="js/lw5-raster.js"></script>
+  <script src="js/lw5-cam-gcode.js"></script>
+  <script src="js/lw5-gcode-overlay.js"></script>
+  <script src="js/lw5-draw.js"></script>
+  <script src="js/lw5-ui.js"></script>
+  <script src="js/lw5-print-dialog.js"></script>
+  <script src="js/lw5-app.js"></script>
+</body>
+</html>
