@@ -1457,6 +1457,7 @@
       var $millDir = $('#lw5-pp-millDir');
       if ($millDir.length) newTp.direction = $millDir.val();
       LW.dispatch({ type: 'DOCUMENT_UPDATE', payload: { id: doc.id, changes: { toolpath: newTp } } });
+      if (typeof LW.saveLastToolpath === 'function') LW.saveLastToolpath(newTp);
       // Trigger image filter preview
       if (doc.type === 'image' && (newTp.type === 'raster' || newTp.type === 'raster_merge')) {
         applyImageFilters(doc.dataURL, newTp, function (filteredUrl) {

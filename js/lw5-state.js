@@ -592,19 +592,20 @@
   };
 
   LW.defaultToolpath = function (type) {
+    var last = loadLastToolpath();
     var base = {
       enabled: type !== 'none',
       type: type || 'none',
-      power: 80,
-      speed: 300,
-      passes: 1,
-      margin: 0,
-      segmentLength: 0.5,
-      trimLine: 1,
+      power: last.power !== undefined ? last.power : 80,
+      speed: last.speed !== undefined ? last.speed : 300,
+      passes: last.passes !== undefined ? last.passes : 1,
+      margin: last.margin !== undefined ? last.margin : 0.5,
+      segmentLength: last.segmentLength !== undefined ? last.segmentLength : 0.5,
+      trimLine: last.trimLine !== undefined ? last.trimLine : 1,
       joinPixel: 1,
       burnWhite: true,
-      dpi: 250,
-      direction: 'horizontal',
+      dpi: last.dpi !== undefined ? last.dpi : 250,
+      direction: last.direction !== undefined ? last.direction : 'horizontal',
       brightness: 0,
       contrast: 0,
       gamma: 1,
@@ -613,19 +614,19 @@
       invertColor: false,
       dithering: false,
       diagonal: false,
-      overScan: 0,
+      overScan: last.overScan !== undefined ? last.overScan : 0,
       // Milling defaults
-      toolDiameter: 3,
-      stepOver: 10,
-      plungeRate: 300,
+      toolDiameter: last.toolDiameter !== undefined ? last.toolDiameter : 6.35,
+      stepOver: last.stepOver !== undefined ? last.stepOver : 10,
+      plungeRate: last.plungeRate !== undefined ? last.plungeRate : 300,
       ramp: false,
-      toolSpeed: 0,
+      toolSpeed: last.toolSpeed !== undefined ? last.toolSpeed : 0,
       cutWidth: 0,
       millRapidZ: 10,
       millStartZ: 0,
       millEndZ: -1,
       toolAngle: 90,
-      passDepth: 1
+      passDepth: last.passDepth !== undefined ? last.passDepth : 1
     };
     if (type === 'cut_on_line' || type === 'cut_outside' || type === 'cut_inside' ||
         type === 'laser_cut_inside' || type === 'laser_cut_outside') {
@@ -645,6 +646,20 @@
       base.passes = 1;
     }
     return base;
+  };
+
+  // Persist last-used toolpath values so they survive page reloads
+  var LAST_TP_KEY = 'LaserWeb5_lastToolpath';
+  function loadLastToolpath() {
+    try {
+      var raw = localStorage.getItem(LAST_TP_KEY);
+      return raw ? JSON.parse(raw) : {};
+    } catch (e) { return {}; }
+  }
+  LW.saveLastToolpath = function (tp) {
+    try {
+      localStorage.setItem(LAST_TP_KEY, JSON.stringify(tp));
+    } catch (e) { /* ignore */ }
   };
 
   // Compatibility: GlobalStore for old code
