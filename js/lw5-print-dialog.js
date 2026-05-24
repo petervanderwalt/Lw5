@@ -64,21 +64,6 @@
             <input type="text" id="lw5-dialog-endpoint-url" class="lw5-dialog-text" />\
           </div>\
         </div>\
-        <!-- Advanced -->\
-        <div class="lw5-dialog-section">\
-          <div class="lw5-dialog-section-title">Options</div>\
-          <div class="lw5-dialog-row">\
-            <label></label>\
-            <label class="lw5-dialog-check"><input type="checkbox" id="lw5-dialog-show-toolpath" checked /> Show toolpath preview in canvas</label>\
-          </div>\
-        </div>\
-      </div>\
-      <div class="lw5-dialog-preview">\
-        <div class="lw5-dialog-preview-header">Preview</div>\
-        <div class="lw5-dialog-preview-canvas" id="lw5-dialog-preview-area">\
-          <canvas id="lw5-dialog-preview-canvas"></canvas>\
-        </div>\
-        <div class="lw5-dialog-preview-status" id="lw5-dialog-preview-status">Ready</div>\
       </div>\
     </div>\
     <div class="lw5-dialog-footer">\
@@ -113,7 +98,6 @@
         populateMachineSelect();
         updateMachineInfo();
         updateJobDetails(docs);
-        renderPreview(docs);
 
         // Bind events
         $overlay.find('#lw5-dialog-machine-sel').on('change', function () {
@@ -211,112 +195,6 @@
         if (copies > 1) detail += ' x ' + copies + ' copies';
         dialog.$overlay.find('#lw5-dialog-doc-count').text(detail);
         dialog.$overlay.find('#lw5-dialog-job-details').text(detail);
-    }
-
-    function renderPreview(docs) {
-        var $canvas = dialog.$overlay.find('#lw5-dialog-preview-canvas');
-        var $area = dialog.$overlay.find('#lw5-dialog-preview-area');
-        var canvas = $canvas[0];
-        if (!canvas) return;
-
-        var rect = $area[0].getBoundingClientRect();
-        var pw = Math.min(rect.width - 4, 450);
-        var ph = Math.min(rect.height - 4, 350);
-        canvas.width = pw;
-        canvas.height = ph;
-        canvas.style.width = pw + 'px';
-        canvas.style.height = ph + 'px';
-
-        var ctx = canvas.getContext('2d');
-        ctx.fillStyle = '#1a1a1a';
-        ctx.fillRect(0, 0, pw, ph);
-
-        if (!docs || !docs.length) {
-            ctx.fillStyle = '#666';
-            ctx.font = '14px sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText('No objects to preview', pw / 2, ph / 2);
-            return;
-        }
-
-        // Calculate bounds of visible content
-        var bounds = { x1: Infinity, y1: Infinity, x2: -Infinity, y2: -Infinity };
-        docs.forEach(function (doc) {
-            var tf = doc.transform2d || [1, 0, 0, 1, 0, 0];
-            if (doc.rawBounds) {
-                var b = doc.rawBounds;
-                var corners = [
-                    { x: b.x1, y: b.y1 }, { x: b.x2, y: b.y1 },
-                    { x: b.x2, y: b.y2 }, { x: b.x1, y: b.y2 }
-                ];
-                corners.forEach(function (c) {
-                    var tx = tf[0] * c.x + tf[2] * c.y + tf[4];
-                    var ty = tf[1] * c.x + tf[3] * c.y + tf[5];
-                    if (tx < bounds.x1) bounds.x1 = tx;
-                    if (ty < bounds.y1) bounds.y1 = ty;
-                    if (tx > bounds.x2) bounds.x2 = tx;
-                    if (ty > bounds.y2) bounds.y2 = ty;
-                });
-            } else if (doc.width && doc.height) {
-                bounds.x1 = Math.min(bounds.x1, tf[4]);
-                bounds.y1 = Math.min(bounds.y1, tf[5]);
-                bounds.x2 = Math.max(bounds.x2, tf[4] + doc.width * tf[0]);
-                bounds.y2 = Math.max(bounds.y2, tf[5] + doc.height * tf[3]);
-            }
-        });
-
-        if (!isFinite(bounds.x1)) {
-            ctx.fillStyle = '#666';
-            ctx.font = '14px sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText('Preview not available', pw / 2, ph / 2);
-            return;
-        }
-
-        var bw = bounds.x2 - bounds.x1 || 1;
-        var bh = bounds.y2 - bounds.y1 || 1;
-        var margin = 20;
-        var scale = Math.min((pw - margin * 2) / bw, (ph - margin * 2) / bh);
-        var ox = (pw - bw * scale) / 2 - bounds.x1 * scale;
-        var oy = (ph - bh * scale) / 2 + bounds.y2 * scale;
-
-        // Draw machine bed outline
-        var m = LW.profiles.getCurrentMachine();
-        if (m) {
-            ctx.strokeStyle = '#333';
-            ctx.lineWidth = 1;
-            ctx.setLineDash([4, 4]);
-            ctx.strokeRect(
-                ox, oy - m.workArea.y * scale,
-                m.workArea.x * scale, m.workArea.y * scale
-            );
-            ctx.setLineDash([]);
-        }
-
-        // Draw each document (simplified preview)
-        docs.forEach(function (doc) {
-            ctx.save();
-            var tf = doc.transform2d || [1, 0, 0, 1, 0, 0];
-            ctx.transform(tf[0] * scale, -tf[1] * scale, -tf[2] * scale, tf[3] * scale, ox + tf[4] * scale, oy - tf[5] * scale);
-
-            if (doc.type === 'image' && doc.image) {
-                try { ctx.drawImage(doc.image, 0, 0); } catch (e) { /* cross-origin */ }
-            } else if (doc.rawPaths) {
-                ctx.strokeStyle = '#4c9aff';
-                ctx.lineWidth = 1;
-                doc.rawPaths.forEach(function (path) {
-                    ctx.beginPath();
-                    for (var i = 0; i < path.length; i += 2) {
-                        if (i === 0) ctx.moveTo(path[i], path[i + 1]);
-                        else ctx.lineTo(path[i], path[i + 1]);
-                    }
-                    ctx.stroke();
-                });
-            }
-            ctx.restore();
-        });
-
-        dialog.$overlay.find('#lw5-dialog-preview-status').text(docs.length + ' object(s)');
     }
 
     // ---- Print Action ------------------------------------------------------
