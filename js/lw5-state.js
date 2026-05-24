@@ -600,7 +600,6 @@
       speed: last.speed !== undefined ? last.speed : 300,
       passes: last.passes !== undefined ? last.passes : 1,
       margin: last.margin !== undefined ? last.margin : 0,
-      laserDiameter: last.laserDiameter !== undefined ? last.laserDiameter : 0.5,
       segmentLength: last.segmentLength !== undefined ? last.segmentLength : 0.5,
       trimLine: last.trimLine !== undefined ? last.trimLine : 1,
       joinPixel: 1,
@@ -616,8 +615,8 @@
       dithering: false,
       diagonal: false,
       overScan: last.overScan !== undefined ? last.overScan : 0,
-      // Milling defaults
-      toolDiameter: last.toolDiameter !== undefined ? last.toolDiameter : 6.35,
+      // Tool diameter — used as beam spot (laser) or cutter diameter (mill)
+      toolDiameter: last.toolDiameter !== undefined ? last.toolDiameter : 0.5,
       stepOver: last.stepOver !== undefined ? last.stepOver : 10,
       plungeRate: last.plungeRate !== undefined ? last.plungeRate : 300,
       ramp: false,
@@ -643,6 +642,7 @@
       base.power = 0;
       base.speed = 300;
       base.passes = 1;
+      base.toolDiameter = 6.35;
     } else if (type === 'raster_merge' || type === 'raster') {
       base.passes = 1;
     }

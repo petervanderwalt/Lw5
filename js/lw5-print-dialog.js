@@ -237,7 +237,7 @@
                     laserPower: tp.power,
                     cutRate: tp.speed,
                     passes: tp.passes || 1,
-                    laserDiameter: tp.laserDiameter || tp.margin || 0.1,
+                    laserDiameter: tp.toolDiameter || tp.margin || 0.1,
                     trimLine: tp.trimLine ? 1 : 0,
                     segmentLength: tp.segmentLength || 0.5,
                     joinPixel: 1,
