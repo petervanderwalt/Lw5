@@ -285,9 +285,9 @@ window.LW.cam = {};
     function vCarve(geometry, cutterAngle, passDepth) {
         if (cutterAngle <= 0 || cutterAngle >= 180)
             return [];
-        if (typeof Module === 'undefined') {
+        if (typeof Module === 'undefined' || typeof Module._vCarve !== 'function') {
             if (!window.displayedCppVCarveError) {
-                (showAlert || function (m) { console.warn(m); })("Failed to load cam-cpp.js; V-Carve unavailable. This message will not repeat.", "danger", false);
+                (typeof showAlert !== 'undefined' ? showAlert : function (m) { console.warn(m); })("Failed to load cam-cpp.js; V-Carve unavailable. This message will not repeat.", "danger", false);
                 window.displayedCppVCarveError = true;
             }
             return [];
@@ -353,7 +353,7 @@ window.LW.cam = {};
     function separateTabs(cutterPath, tabGeometry) {
         if (tabGeometry.length === 0)
             return [cutterPath];
-        if (typeof Module === 'undefined') {
+        if (typeof Module === 'undefined' || typeof Module._separateTabs !== 'function') {
             if (!displayedCppTabError1) {
                 showAlert("Failed to load cam-cpp.js; tabs will be missing. This message will not repeat.", "danger", false);
                 displayedCppTabError1 = true;
