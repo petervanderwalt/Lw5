@@ -70,6 +70,8 @@
 
     var dialog = null;
 
+    var _lastOutputMode = localStorage.getItem('lw5-print-output-mode') || 'file';
+
     function openPrintDialog() {
         var state = LW.getState();
         var docs = (state.documents || []).filter(function (d) { return d.visible !== false && d.selected; });
@@ -101,6 +103,8 @@
 
         $overlay.find('#lw5-dialog-output').on('change', function () {
             var val = $(this).val();
+            _lastOutputMode = val;
+            localStorage.setItem('lw5-print-output-mode', val);
             $overlay.find('.lw5-dialog-row-endpoint').toggle(val === 'http');
         });
 
@@ -154,16 +158,21 @@
         if (!m) return;
         $sel.find('option[value="http"]').toggle(m.protocol === 'http');
         $sel.find('option[value="serial"]').toggle(m.protocol === 'serial');
-        if (m.protocol === 'http') {
+        var restoreVal = _lastOutputMode;
+        var opt = $sel.find('option[value="' + restoreVal + '"]');
+        if (opt.length) {
+            $sel.val(restoreVal);
+        } else if (m.protocol === 'http') {
             $sel.val('http');
-            dialog.$overlay.find('#lw5-dialog-endpoint-url').val(m.endpoint || 'http://laser.local');
-            dialog.$overlay.find('.lw5-dialog-row-endpoint').show();
         } else if (m.protocol === 'serial') {
             $sel.val('serial');
-            dialog.$overlay.find('.lw5-dialog-row-endpoint').hide();
         } else {
             $sel.val('file');
-            dialog.$overlay.find('.lw5-dialog-row-endpoint').hide();
+        }
+        var curVal = $sel.val();
+        dialog.$overlay.find('.lw5-dialog-row-endpoint').toggle(curVal === 'http');
+        if (curVal === 'http') {
+            dialog.$overlay.find('#lw5-dialog-endpoint-url').val(m.endpoint || 'http://laser.local');
         }
     }
 
@@ -205,9 +214,9 @@
             // Group docs by toolpath type then serialise each toolpath to an operation
             function getOpKey(d) {
                 var tp = d.toolpath || { type: 'none', power: 0, speed: 0, passes: 0 };
-                return tp.type + '|' + tp.power + '|' + tp.speed + '|' + (tp.margin || 0) + '|' + (tp.trimLine ? 1 : 0) + '|' + (tp.toolDiameter || '') + '|' + (tp.passDepth || '') + '|' + (tp.cutWidth || 0) + '|' + (tp.stepOver || 10) + '|' + (tp.direction || '') + '|' + (tp.lineDistance || 0.1) + '|' + (tp.lineAngle || 0) + '|' + (tp.laserPowerRange || 100) + '|' + (tp.toolSpeed || 0) + '|' + (tp.dpi || 0) + '|' + (tp.diagonal ? 1 : 0) + '|' + (tp.overScan || 0) + '|' + (tp.invertColor ? 1 : 0) + '|' + (tp.smoothing ? 1 : 0) + '|' + (tp.grayscale ? 1 : 0);
+                return tp.type + '|' + tp.power + '|' + tp.speed + '|' + (tp.margin || 0) + '|' + (tp.trimLine ? 1 : 0) + '|' + (tp.toolDiameter || '') + '|' + (tp.passDepth || '') + '|' + (tp.cutWidth || 0) + '|' + (tp.stepOver || 10) + '|' + (tp.direction || '') + '|' + (tp.lineDistance || 0.1) + '|' + (tp.lineAngle || 0) + '|' + (tp.crossAngle || 90) + '|' + (tp.laserPowerRange || 100) + '|' + (tp.toolSpeed || 0) + '|' + (tp.dpi || 0) + '|' + (tp.diagonal ? 1 : 0) + '|' + (tp.overScan || 0) + '|' + (tp.invertColor ? 1 : 0) + '|' + (tp.smoothing ? 1 : 0) + '|' + (tp.grayscale ? 1 : 0) + '|' + (tp.toolAngle || 90);
             }
-            function toolpathToOperation(d) {
+            window.toolpathToOperation = function toolpathToOperation(d) {
                 var tp = d.toolpath || LW.defaultToolpath('none');
                 var t = tp.type;
                 var opType;
@@ -215,8 +224,24 @@
                     opType = t === 'raster_merge' ? 'Laser Raster Merge' : 'Laser Raster';
                 } else if (t === 'pocket' || t === 'laser_fill') {
                     opType = 'Laser Fill Path';
+                } else if (t === 'laser_hatch') {
+                    opType = 'Laser Hatch Fill';
+                } else if (t === 'laser_crosshatch') {
+                    opType = 'Laser Cross Hatch';
+                } else if (t === 'laser_spiral') {
+                    opType = 'Laser Spiral Fill';
+                } else if (t === 'laser_concentric') {
+                    opType = 'Laser Concentric Fill';
+                } else if (t === 'laser_stipple') {
+                    opType = 'Laser Stipple';
+                } else if (t === 'mill_halftone') {
+                    opType = 'Mill Halftone';
+                } else if (t === 'mill_wavy_raster') {
+                    opType = 'Mill Wavy Raster';
+                } else if (t === 'mill_heightmap') {
+                    opType = 'Mill Heightmap';
                 } else if (t.indexOf('mill_') === 0) {
-                    var millMap = { mill_pocket: 'Mill Pocket', mill_cut: 'Mill Cut', mill_cut_inside: 'Mill Cut Inside', mill_cut_outside: 'Mill Cut Outside', mill_vcarve: 'Mill V Carve' };
+                    var millMap = { mill_pocket: 'Mill Pocket', mill_cut: 'Mill Cut', mill_cut_inside: 'Mill Cut Inside', mill_cut_outside: 'Mill Cut Outside', mill_vcarve: 'Mill V Carve', mill_hatch: 'Mill Hatch Fill', mill_crosshatch: 'Mill Cross Hatch', mill_spiral: 'Mill Spiral Fill', mill_concentric: 'Mill Concentric Fill', mill_stipple: 'Mill Stipple' };
                     opType = millMap[t] || 'Mill Cut';
                 } else if (t === 'cut_outside' || t === 'laser_cut_outside') {
                     opType = 'Laser Cut Outside';
@@ -226,7 +251,8 @@
                     opType = 'Laser Cut';
                 }
                 var isMill = t.indexOf('mill_') === 0;
-                var isRaster = t === 'raster' || t === 'raster_merge';
+                var isRaster = t === 'raster' || t === 'raster_merge' || t === 'mill_halftone' || t === 'mill_wavy_raster' || t === 'mill_heightmap';
+                var isBitmapMill = t === 'mill_halftone' || t === 'mill_wavy_raster' || t === 'mill_heightmap';
                 var op = {
                     id: '__print_' + d.id + '__',
                     type: opType,
@@ -284,6 +310,10 @@
                     op.toolAngle = tp.toolAngle || 90;
                     op.ramp = tp.ramp || false;
                     op.toolSpeed = tp.toolSpeed || 0;
+                }
+                // Bitmap mill ops also need DPI like raster
+                if (isBitmapMill) {
+                    op.dpi = tp.dpi || 250;
                 }
                 return op;
             }

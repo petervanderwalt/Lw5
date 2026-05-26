@@ -40,6 +40,9 @@
         if (state) {
             LW.draw.updateWorkspace(state.settings);
             LW.draw.updateDocuments(state.documents);
+            if (typeof window.previewAllToolpaths === 'function') {
+                window.previewAllToolpaths();
+            }
         }
 
         window.addEventListener('resize', function () { resize2D(container); });
@@ -55,19 +58,8 @@
             }
         });
 
-        // Show toolpath popup when a document is selected on canvas
+        // Update transform bar on selection; toolpath config is via sidebar now
         LW.draw.onSelectionChange = function (selectedIds) {
-            var docs = LW.getState().documents;
-            if (selectedIds.length === 1) {
-                var doc = docs.filter(function (d) { return d.id === selectedIds[0]; })[0];
-                if (doc) {
-                    if (window.showToolpathPopup) {
-                        window.showToolpathPopup(doc);
-                    }
-                }
-            } else {
-                $('#lw5-toolpath-popup').remove();
-            }
             if (window.showTransformBar) window.showTransformBar(selectedIds);
         };
     }
@@ -78,6 +70,9 @@
         // Account for workspace tabs height
         var tabsEl = container.querySelector('.lw5-workspace-tabs');
         if (tabsEl) h -= tabsEl.offsetHeight;
+        // Account for transform bar height (always visible)
+        var tfBar = container.querySelector('.lw5-transform-bar');
+        if (tfBar) h -= tfBar.offsetHeight;
         LW.draw.resize(w, h);
     }
 

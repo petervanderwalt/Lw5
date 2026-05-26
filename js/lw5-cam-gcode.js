@@ -1367,6 +1367,148 @@
         });
     }
 
+    function getMillBitmapGcodeFromOp(settings, opIndex, op, docsWithImages, showAlert, done, progress, jobIndex, QE_chunk, workers) {
+        if (!docsWithImages || !docsWithImages.length) {
+            showAlert('No bitmap documents for ' + op.type, 'warning');
+            done('');
+            return;
+        }
+        var ok = true;
+        if (!(op.cutRate > 0)) { showAlert('CutRate must be > 0', 'danger'); ok = false; }
+        if (!(op.plungeRate > 0)) { showAlert('PlungeRate must be > 0', 'danger'); ok = false; }
+        if (!ok) { done(false); return; }
+
+        var dpi = op.dpi || settings.dpiBitmap || 250;
+        if (!dpi || dpi <= 0) { showAlert('DPI must be > 0', 'danger'); done(false); return; }
+
+        var basePath = window.location.href.replace(/\/[^/]*$/, '/');
+        var workerCode = [
+            'var window = self;',
+            'self.onmessage = function(e) {',
+            '  var d = e.data;',
+            '  if (d.cmd === "generate") {',
+            '    try {',
+            '      var fn;',
+            '      if (d.type === "Mill Halftone") fn = LW.millHalftone;',
+            '      else if (d.type === "Mill Wavy Raster") fn = LW.millWavy;',
+            '      else if (d.type === "Mill Heightmap") fn = LW.millHeightmap;',
+            '      if (!fn) { self.postMessage({ event: "onError", error: "Unknown type: " + d.type }); return; }',
+            '      var gcode = fn({ width: d.width, height: d.height, data: d.data }, d.opts);',
+            '      self.postMessage({ event: "onDone", gcode: gcode });',
+            '    } catch(e) {',
+            '      self.postMessage({ event: "onError", error: e.toString() });',
+            '    }',
+            '  }',
+            '};',
+            'importScripts("' + basePath + 'js/lw5-mill-halftone.js");',
+            'importScripts("' + basePath + 'js/lw5-mill-wavy.js");',
+            'importScripts("' + basePath + 'js/lw5-mill-heightmap.js");'
+        ].join('\n');
+
+        var worker = getBlobWorker(workerCode);
+        if (workers) workers.push(worker);
+
+        var gcode = '';
+        var axisAFactor = (op.useA && op.aAxisDiameter) ? Number(360 / op.aAxisDiameter / Math.PI).toFixed(3) : 1;
+        var QE = new window.queue();
+        QE.concurrency = 1;
+        QE.timeout = 3600 * 1000;
+        QE.chunk = 100 / docsWithImages.length;
+
+        var percentProcessing = function (percent) {
+            var p = parseInt((jobIndex * QE_chunk) + (percent * (QE_chunk / 100)));
+            progress(p);
+        };
+
+        for (var index = 0; index < docsWithImages.length; index++) {
+            QE.push(function (idx) {
+                return function (cb) {
+                    var doc = Object.assign({}, docsWithImages[idx]);
+                    var img = new Image();
+                    img.onload = function () {
+                        var image = this;
+                        var scale = (dpi * 100) / 2540;
+                        var cellSize = 25.4 / dpi;
+
+                        var docBounds = getImageBounds(doc.transform2d, image.width, image.height);
+                        var imgBounds = getImageBounds(doc.transform2d, image.width * scale, image.height * scale);
+
+                        var w = Math.round(imgBounds.x2 - imgBounds.x1);
+                        var h = Math.round(imgBounds.y2 - imgBounds.y1);
+
+                        var canvas = document.createElement('canvas');
+                        canvas.width = w;
+                        canvas.height = h;
+                        var ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+                        ctx.translate(w / 2, h / 2);
+                        ctx.transform(-doc.transform2d[0] * scale, doc.transform2d[1] * scale, doc.transform2d[2] * scale, -doc.transform2d[3] * scale, 0, 0);
+                        ctx.rotate((Math.PI / 180) * 180);
+                        ctx.translate(-w / 2, -h / 2);
+                        ctx.translate((w - image.width) / 2, (h - image.height) / 2);
+                        ctx.drawImage(image, 0, 0);
+
+                        var imageData = ctx.getImageData(0, 0, w, h);
+                        var offsetX = (docBounds.x1 + docBounds.x2 - w / dpi * 25.4) / 2 + doc.transform2d[4];
+                        var offsetY = (docBounds.y1 + docBounds.y2 - h / dpi * 25.4) / 2 + doc.transform2d[5];
+
+                        var opts = {
+                            cellSize: cellSize,
+                            safeZ: op.millRapidZ || 10,
+                            startZ: op.millStartZ || 0,
+                            maxDepth: op.millEndZ || -1,
+                            plungeFeed: op.plungeRate * (settings.toolFeedUnits === 'mm/s' ? 60 : 1),
+                            cutFeed: op.cutRate * (settings.toolFeedUnits === 'mm/s' ? 60 : 1),
+                            decimal: 3,
+                            offsetX: offsetX,
+                            offsetY: offsetY,
+                            direction: op.direction || 'top_to_bottom',
+                            invert: op.invertColor,
+                            stepOverPx: 1
+                        };
+
+                        var buffer = imageData.data.buffer;
+                        worker.onmessage = function (e) {
+                            var data = e.data;
+                            if (data.event === 'onDone') {
+                                var chunk = data.gcode;
+                                if (op.useA && op.aAxisDiameter) {
+                                    chunk = chunk.replace(/Y([\d\.\-]+)/gi, function (m, f) {
+                                        return 'A' + (parseFloat(f) * axisAFactor).toFixed(3);
+                                    });
+                                }
+                                gcode += chunk;
+                                percentProcessing(100);
+                                cb();
+                            } else {
+                                showAlert(data.error || 'Worker error', 'danger');
+                                cb();
+                            }
+                        };
+                        worker.postMessage({
+                            cmd: 'generate',
+                            type: op.type,
+                            width: imageData.width,
+                            height: imageData.height,
+                            data: imageData.data,
+                            opts: opts
+                        }, [buffer]);
+                    };
+                    img.src = doc.dataURL;
+                };
+            }(index));
+        }
+
+        QE.start(function (err) {
+            worker.terminate();
+            var full = '';
+            if (op.hookOperationStart && op.hookOperationStart.length) full += op.hookOperationStart;
+            full += gcode;
+            if (op.hookOperationEnd && op.hookOperationEnd.length) full += op.hookOperationEnd;
+            done(full);
+        });
+    }
+
     function getGcode(settings, documents, operations, documentCacheHolder, showAlert, done, progress) {
         var starttime = new Date().getTime();
         var QE = new window.queue();
@@ -1503,7 +1645,7 @@
                             var filteredDocIds = preflight.filteredDocIds;
                             var docsWithImages = preflight.docsWithImages;
 
-                            if (op.type === 'Laser Cut' || op.type === 'Laser Cut Inside' || op.type === 'Laser Cut Outside' || op.type === 'Laser Fill Path') {
+                            if (op.type === 'Laser Cut' || op.type === 'Laser Cut Inside' || op.type === 'Laser Cut Outside' || op.type === 'Laser Fill Path' || op.type === 'Laser Hatch Fill' || op.type === 'Laser Cross Hatch' || op.type === 'Laser Spiral Fill' || op.type === 'Laser Concentric Fill' || op.type === 'Laser Stipple') {
                                 var lasercutWorkerCode = [
                                     'var LW = {};',
                                     'LW.mesh = self.__mesh__;',
@@ -1704,29 +1846,40 @@
                                     '  return gcode;',
                                     '}',
                                     '',
-                                    'onmessage = function(event) {',
-                                    '  var data = event.data;',
-                                    '  var settings = data.settings, opIndex = data.opIndex, op = data.op;',
-                                    '  var geometry = data.geometry || [], openGeometry = data.openGeometry || [];',
-                                    '  var tabGeometry = data.tabGeometry || [];',
-                                    '  var errors = [];',
-                                    '  var showAlert = function(message, level) { errors.push({ message: message, level: level }); };',
-                                    '  var progressFn = function() { postMessage(JSON.stringify({ event: "onProgress", gcode: null, errors: errors })); };',
-                                    '  var done = function(gcode) {',
-                                    '    if (gcode === false && errors.length) { postMessage(JSON.stringify({ event: "onError", errors: errors })); }',
-                                    '    else { postMessage(JSON.stringify({ event: "onDone", gcode: gcode })); }',
-                                    '    self.close();',
-                                    '  };',
-                                    '  try {',
-                                    '    var cam = self.__cam__;',
-                                    '    var mesh = self.__mesh__;',
-                                    '    var mmToClipperScale = mesh.mmToClipperScale;',
-                                    '    var ok = true;',
-                                    '',
-                                    '    if (op.type !== "Laser Cut" && op.type !== "Laser Fill Path") {',
+                                     'onmessage = function(event) {',
+                                     '  if (typeof Module === "undefined" || typeof Module._separateTabs === "function") {',
+                                     '    __runOp(event);',
+                                     '  } else {',
+                                     '    var _waitOrig = Module.onRuntimeInitialized;',
+                                     '    Module.onRuntimeInitialized = function() {',
+                                     '      if (_waitOrig) _waitOrig();',
+                                     '      __runOp(event);',
+                                     '    };',
+                                     '  }',
+                                     '};',
+                                     'function __runOp(event) {',
+                                     '  var data = event.data;',
+                                     '  var settings = data.settings, opIndex = data.opIndex, op = data.op;',
+                                     '  var geometry = data.geometry || [], openGeometry = data.openGeometry || [];',
+                                     '  var tabGeometry = data.tabGeometry || [];',
+                                     '  var errors = [];',
+                                     '  var showAlert = function(message, level) { errors.push({ message: message, level: level }); };',
+                                     '  var progressFn = function() { postMessage(JSON.stringify({ event: "onProgress", gcode: null, errors: errors })); };',
+                                     '  var done = function(gcode) {',
+                                     '    if (gcode === false && errors.length) { postMessage(JSON.stringify({ event: "onError", errors: errors })); }',
+                                     '    else { postMessage(JSON.stringify({ event: "onDone", gcode: gcode })); }',
+                                     '    self.close();',
+                                     '  };',
+                                     '  try {',
+                                     '    var cam = self.__cam__;',
+                                     '    var mesh = self.__mesh__;',
+                                     '    var mmToClipperScale = mesh.mmToClipperScale;',
+                                     '    var ok = true;',
+                                     '',
+                                     '    if (op.type !== "Laser Cut" && op.type !== "Laser Fill Path" && op.type !== "Laser Hatch Fill" && op.type !== "Laser Cross Hatch" && op.type !== "Laser Spiral Fill" && op.type !== "Laser Concentric Fill" && op.type !== "Laser Stipple") {',
                                     '      if (op.laserDiameter <= 0) { showAlert("Laser Diameter must be greater than 0", "danger"); ok = false; }',
                                     '    }',
-                                    '    if (op.type === "Laser Fill Path") {',
+                                    '    if (op.type === "Laser Fill Path" || op.type === "Laser Hatch Fill" || op.type === "Laser Cross Hatch" || op.type === "Laser Spiral Fill" || op.type === "Laser Concentric Fill" || op.type === "Laser Stipple") {',
                                     '      if (op.lineDistance <= 0) { showAlert("Line Distance must be greater than 0", "danger"); ok = false; }',
                                     '    }',
                                     '    if (op.laserPower < 0 || op.laserPower > 100) { showAlert("Laser Power must be in range [0, 100]", "danger"); ok = false; }',
@@ -1747,10 +1900,24 @@
                                     '    } else if (op.type === "Laser Cut Outside") {',
                                     '      if (op.margin) geometry = mesh.offset(geometry, op.margin * mmToClipperScale);',
                                     '      camPaths = cam.insideOutside(geometry, op.laserDiameter * mmToClipperScale, false, op.cutWidth * mmToClipperScale, op.stepOver, op.direction === "Climb", false);',
-                                    '    } else if (op.type === "Laser Fill Path") {',
+                                    '    } else if (op.type === "Laser Fill Path" || op.type === "Laser Hatch Fill") {',
                                     '      if (op.margin) geometry = mesh.offset(geometry, -op.margin * mmToClipperScale);',
-                                    '      camPaths = cam.fillPath(geometry, op.lineDistance * mmToClipperScale, op.lineAngle);',
-                                    '    }',
+                                    '      camPaths = cam.fillPath(geometry, op.lineDistance * mmToClipperScale, op.lineAngle || 0);',
+                                     '    } else if (op.type === "Laser Cross Hatch") {',
+                                     '      if (op.margin) geometry = mesh.offset(geometry, -op.margin * mmToClipperScale);',
+                                     '      var hatch1 = cam.fillPath(geometry, op.lineDistance * mmToClipperScale, op.lineAngle || 0);',
+                                    '      var hatch2 = cam.fillPath(geometry, op.lineDistance * mmToClipperScale, (op.crossAngle || 90));',
+                                    '      camPaths = hatch1.concat(hatch2);',
+                                    '    } else if (op.type === "Laser Spiral Fill") {',
+                                    '      if (op.margin) geometry = mesh.offset(geometry, -op.margin * mmToClipperScale);',
+                                    '      camPaths = cam.pocket(geometry, op.lineDistance * mmToClipperScale, op.stepOver, false);',
+                                    '    } else if (op.type === "Laser Concentric Fill") {',
+                                    '      if (op.margin) geometry = mesh.offset(geometry, -op.margin * mmToClipperScale);',
+                                    '      camPaths = cam.insideOutside(geometry, op.lineDistance * mmToClipperScale, true, op.cutWidth * mmToClipperScale, op.stepOver, op.direction === "Climb", false);',
+                                    '    } else if (op.type === "Laser Stipple") {',
+                                    '      if (op.margin) geometry = mesh.offset(geometry, -op.margin * mmToClipperScale);',
+                                    '      camPaths = cam.fillPath(geometry, op.lineDistance * mmToClipperScale, op.lineAngle || 0);',
+                                     '    }',
                                     '    cam.reduceCamPaths(camPaths, op.segmentLength * mmToClipperScale);',
                                     '',
                                     '    var feedScale = 1;',
@@ -1940,10 +2107,12 @@
                                     '    if (op.passDepth <= 0) { showAlert("Pass Depth must be greater than 0", "danger"); ok = false; }',
                                     '    if (op.type === "Mill V Carve") {',
                                     '      if (op.toolAngle <= 0 || op.toolAngle >= 180) { showAlert("Tool Angle must be in range (0, 180)", "danger"); ok = false; }',
+                                    '    } else if (op.type === "Mill Halftone" || op.type === "Mill Wavy Raster" || op.type === "Mill Heightmap") {',
+                                    '      if (op.toolAngle <= 0 || op.toolAngle >= 180) { showAlert("Tool Angle must be in range (0, 180)", "danger"); ok = false; }',
                                     '    } else {',
                                     '      if (op.millEndZ >= op.millStartZ) { showAlert("millEndZ must be < millStartZ", "danger"); ok = false; }',
-                                    '      if (op.type !== "Mill Cut" && op.toolDiameter <= 0) { showAlert("Tool Diameter must be greater than 0", "danger"); ok = false; }',
-                                    '      if (op.stepOver <= 0 || op.stepOver > 100) { showAlert("Step Over must be in range 0-100%", "danger"); ok = false; }',
+                                    '      if (op.type !== "Mill Cut" && op.type !== "Mill Hatch Fill" && op.type !== "Mill Cross Hatch" && op.type !== "Mill Spiral Fill" && op.type !== "Mill Concentric Fill" && op.type !== "Mill Stipple" && op.toolDiameter <= 0) { showAlert("Tool Diameter must be greater than 0", "danger"); ok = false; }',
+                                    '      if (op.type !== "Mill Hatch Fill" && op.type !== "Mill Cross Hatch" && op.type !== "Mill Stipple" && (op.stepOver <= 0 || op.stepOver > 100)) { showAlert("Step Over must be in range 0-100%", "danger"); ok = false; }',
                                     '    }',
                                     '    if (op.plungeRate <= 0) { showAlert("Plunge Rate must be greater than 0", "danger"); ok = false; }',
                                     '    if (op.cutRate <= 0) { showAlert("Cut Rate must be greater than 0", "danger"); ok = false; }',
@@ -1964,6 +2133,23 @@
                                     '      camPaths = cam.insideOutside(geometry, op.toolDiameter * mmToClipperScale, false, op.cutWidth * mmToClipperScale, op.stepOver, op.direction === "Climb", true);',
                                     '    } else if (op.type === "Mill V Carve") {',
                                     '      camPaths = cam.vCarve(geometry, op.toolAngle, op.passDepth * mmToClipperScale);',
+                                    '    } else if (op.type === "Mill Hatch Fill") {',
+                                    '      if (op.margin) geometry = mesh.offset(geometry, -op.margin * mmToClipperScale);',
+                                    '      camPaths = cam.fillPath(geometry, op.lineDistance * mmToClipperScale, op.lineAngle || 0);',
+                                    '    } else if (op.type === "Mill Cross Hatch") {',
+                                    '      if (op.margin) geometry = mesh.offset(geometry, -op.margin * mmToClipperScale);',
+                                    '      var h1 = cam.fillPath(geometry, op.lineDistance * mmToClipperScale, op.lineAngle || 0);',
+                                    '      var h2 = cam.fillPath(geometry, op.lineDistance * mmToClipperScale, (op.crossAngle || 90));',
+                                    '      camPaths = h1.concat(h2);',
+                                    '    } else if (op.type === "Mill Spiral Fill") {',
+                                    '      if (op.margin) geometry = mesh.offset(geometry, -op.margin * mmToClipperScale);',
+                                    '      camPaths = cam.pocket(geometry, op.toolDiameter * mmToClipperScale, op.stepOver, op.direction === "Climb");',
+                                    '    } else if (op.type === "Mill Concentric Fill") {',
+                                    '      if (op.margin) geometry = mesh.offset(geometry, -op.margin * mmToClipperScale);',
+                                    '      camPaths = cam.insideOutside(geometry, op.toolDiameter * mmToClipperScale, true, op.cutWidth * mmToClipperScale, op.stepOver, op.direction === "Climb", true);',
+                                    '    } else if (op.type === "Mill Stipple") {',
+                                    '      if (op.margin) geometry = mesh.offset(geometry, -op.margin * mmToClipperScale);',
+                                    '      camPaths = cam.fillPath(geometry, op.lineDistance * mmToClipperScale, op.lineAngle || 0);',
                                     '    }',
                                     '    for (var ci = 0; ci < camPaths.length; ci++) {',
                                     '      var pp = camPaths[ci].path;',
@@ -1994,6 +2180,10 @@
                                 ].join('\n');
 
                                 invokeWebWorker(millWorkerCode, { settings: settings, opIndex: opIndex, op: op, geometry: geometry, openGeometry: openGeometry, tabGeometry: tabGeometry }, cb, jobIndex);
+
+                            } else if (op.type === 'Mill Halftone' || op.type === 'Mill Wavy Raster' || op.type === 'Mill Heightmap') {
+
+                                getMillBitmapGcodeFromOp(settings, opIndex, op, docsWithImages, showAlert, function (gcode) { jobDone(gcode, cb); }, progress, jobIndex, QE.chunk, workers);
 
                             } else if (op.type.substring(0, 6) === 'Lathe ') {
 
@@ -2206,8 +2396,63 @@
         return QE;
     }
 
+    function getGcodeFromToolpaths(toolpaths, settings) {
+      var gcode = '';
+      var mmToClipperScale = (window.LW && window.LW.mesh && window.LW.mesh.mmToClipperScale) || 50000000;
+      var scale = 1 / mmToClipperScale;
+      var feedScale = settings.toolFeedUnits === 'mm/s' ? 60 : 1;
+      var generator = getGenerator(settings.gcodeGenerator, settings);
+      var toolOnCmd = (settings.gcodeToolOn || 'M03 S1000') + '\r\n';
+      var toolOffCmd = (settings.gcodeToolOff || 'M05') + '\r\n';
+
+      gcode += '; G-Code generated by LaserWeb5 (toolpath fast path)\r\n';
+      gcode += '; Toolpaths: ' + toolpaths.length + '\r\n\r\n';
+      gcode += 'G21 ; Units in mm\r\n';
+      gcode += 'G90 ; Absolute positioning\r\n';
+      gcode += 'G17 ; XY plane\r\n\r\n';
+
+      for (var ti = 0; ti < toolpaths.length; ti++) {
+        var tp = toolpaths[ti];
+        if (tp.visible === false || tp.enabled === false) continue;
+        if (!tp.computed || !tp.computed.camPaths || !tp.computed.camPaths.length) continue;
+        var camPaths = tp.computed.camPaths;
+        var tpSettings = tp.toolpath || {};
+        var cutFeed = (parseFloat(tpSettings.speed) || 300) * feedScale;
+        var passes = parseInt(tpSettings.passes) || 1;
+
+        gcode += '; === Toolpath: ' + (tp.name || 'unnamed') + ' ===\r\n';
+        gcode += '; Type: ' + (tpSettings.type || 'cut') + '\r\n';
+        gcode += '; Paths: ' + camPaths.length + '\r\n';
+        gcode += '; Passes: ' + passes + '\r\n';
+        gcode += '; Cut rate: ' + cutFeed + ' ' + settings.toolFeedUnits + '\r\n\r\n';
+
+        for (var pass = 0; pass < passes; pass++) {
+          gcode += '; Pass ' + pass + '\r\n';
+          for (var pi = 0; pi < camPaths.length; pi++) {
+            var pp = camPaths[pi].path;
+            if (!pp || !pp.length) continue;
+            var first = { x: (pp[0].X * scale).toFixed(3), y: (-pp[0].Y * scale).toFixed(3) };
+            gcode += generator.moveRapid(first) + '\r\n';
+            gcode += toolOnCmd;
+            for (var pj = 1; pj < pp.length; pj++) {
+              var pt = { x: (pp[pj].X * scale).toFixed(3), y: (-pp[pj].Y * scale).toFixed(3) };
+              if (pj === 1) pt.f = cutFeed;
+              gcode += generator.moveTool(pt) + '\r\n';
+            }
+            gcode += toolOffCmd;
+          }
+        }
+        gcode += '\r\n';
+      }
+
+      gcode += 'M05 ; Tool off\r\n';
+      gcode += 'M30 ; Program end\r\n';
+      return gcode;
+    }
+
     LW.gcode = {
         getGcode: getGcode,
+        getGcodeFromToolpaths: getGcodeFromToolpaths,
         expandHookGCode: expandHookGCode,
         parseGcode: parseGcode,
         getLaserCutGcode: getLaserCutGcode,

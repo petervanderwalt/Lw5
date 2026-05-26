@@ -19,6 +19,7 @@
     laserDiameter: { name: 'laserDiameter', label: 'Laser Diameter', units: 'mm', input: 'number', min: 0 },
     lineDistance: { name: 'lineDistance', label: 'Line Distance', units: 'mm', input: 'number', min: 0 },
     lineAngle: { name: 'lineAngle', label: 'Line Angle', units: 'deg', input: 'number' },
+    crossAngle: { name: 'crossAngle', label: 'Cross Angle', units: 'deg', input: 'number' },
     toolDiameter: { name: 'toolDiameter', label: 'Tool Diameter', units: 'mm', input: 'number', min: 0 },
     toolAngle: { name: 'toolAngle', label: 'Tool Angle', units: 'deg', input: 'number', min: 0, max: 180 },
     margin: { name: 'margin', label: 'Margin', units: 'mm', input: 'number' },
@@ -75,6 +76,11 @@
     'Laser Cut Inside': { fields: ['name', 'laserDiameter', 'laserPower', 'margin', 'passes', 'passDepth', 'startHeight', 'cutRate', 'useA', 'aAxisDiameter', 'useBlower', 'segmentLength'] },
     'Laser Cut Outside': { fields: ['name', 'laserDiameter', 'laserPower', 'margin', 'passes', 'passDepth', 'startHeight', 'cutRate', 'useA', 'aAxisDiameter', 'useBlower', 'segmentLength'] },
     'Laser Fill Path': { fields: ['name', 'lineDistance', 'lineAngle', 'laserPower', 'margin', 'passes', 'passDepth', 'startHeight', 'cutRate', 'useA', 'aAxisDiameter', 'useBlower'] },
+    'Laser Hatch Fill': { fields: ['name', 'lineDistance', 'lineAngle', 'laserPower', 'margin', 'passes', 'passDepth', 'startHeight', 'cutRate', 'useA', 'aAxisDiameter', 'useBlower'] },
+    'Laser Cross Hatch': { fields: ['name', 'lineDistance', 'lineAngle', 'laserPower', 'margin', 'passes', 'passDepth', 'startHeight', 'cutRate', 'useA', 'aAxisDiameter', 'useBlower'] },
+    'Laser Spiral Fill': { fields: ['name', 'lineDistance', 'laserPower', 'margin', 'passes', 'passDepth', 'startHeight', 'cutRate', 'useA', 'aAxisDiameter', 'useBlower'] },
+    'Laser Concentric Fill': { fields: ['name', 'lineDistance', 'laserPower', 'margin', 'passes', 'passDepth', 'startHeight', 'cutRate', 'useA', 'aAxisDiameter', 'useBlower'] },
+    'Laser Stipple': { fields: ['name', 'lineDistance', 'laserPower', 'margin', 'passes', 'passDepth', 'startHeight', 'cutRate', 'useA', 'aAxisDiameter', 'useBlower'] },
     'Laser Raster': { fields: ['name', 'laserPowerRange', 'laserDiameter', 'passes', 'passDepth', 'startHeight', 'cutRate', 'useBlower', 'trimLine', 'joinPixel', 'burnWhite', 'verboseGcode', 'diagonal', 'overScan', 'useA', 'aAxisDiameter', 'smoothing', 'brightness', 'contrast', 'gamma', 'grayscale', 'shadesOfGray', 'invertColor', 'dithering'] },
     'Laser Raster Merge': { fields: ['name', 'laserPowerRange', 'laserDiameter', 'passes', 'passDepth', 'startHeight', 'cutRate', 'useBlower', 'trimLine', 'joinPixel', 'burnWhite', 'verboseGcode', 'diagonal', 'overScan', 'useA', 'aAxisDiameter', 'smoothing', 'brightness', 'contrast', 'gamma', 'grayscale', 'shadesOfGray', 'invertColor', 'dithering'] },
     'Mill Pocket': { fields: ['name', 'direction', 'margin', 'toolSpeed', 'millRapidZ', 'millStartZ', 'millEndZ', 'passDepth', 'toolDiameter', 'stepOver', 'segmentLength', 'plungeRate', 'cutRate', 'ramp'] },
@@ -82,6 +88,14 @@
     'Mill Cut Inside': { fields: ['name', 'direction', 'margin', 'toolSpeed', 'millRapidZ', 'millStartZ', 'millEndZ', 'passDepth', 'cutWidth', 'toolDiameter', 'stepOver', 'plungeRate', 'cutRate', 'segmentLength', 'ramp'] },
     'Mill Cut Outside': { fields: ['name', 'direction', 'margin', 'toolSpeed', 'millRapidZ', 'millStartZ', 'millEndZ', 'passDepth', 'cutWidth', 'toolDiameter', 'stepOver', 'plungeRate', 'cutRate', 'segmentLength', 'ramp'] },
     'Mill V Carve': { fields: ['name', 'direction', 'toolAngle', 'millRapidZ', 'millStartZ', 'toolSpeed', 'passDepth', 'segmentLength', 'plungeRate', 'cutRate'] },
+    'Mill Hatch Fill': { fields: ['name', 'direction', 'margin', 'lineDistance', 'lineAngle', 'toolSpeed', 'millRapidZ', 'millStartZ', 'millEndZ', 'passDepth', 'toolDiameter', 'stepOver', 'segmentLength', 'plungeRate', 'cutRate', 'ramp'] },
+    'Mill Cross Hatch': { fields: ['name', 'direction', 'margin', 'lineDistance', 'lineAngle', 'toolSpeed', 'millRapidZ', 'millStartZ', 'millEndZ', 'passDepth', 'toolDiameter', 'stepOver', 'segmentLength', 'plungeRate', 'cutRate', 'ramp'] },
+    'Mill Spiral Fill': { fields: ['name', 'direction', 'margin', 'lineDistance', 'toolSpeed', 'millRapidZ', 'millStartZ', 'millEndZ', 'passDepth', 'toolDiameter', 'stepOver', 'segmentLength', 'plungeRate', 'cutRate', 'ramp'] },
+    'Mill Concentric Fill': { fields: ['name', 'direction', 'margin', 'lineDistance', 'toolSpeed', 'millRapidZ', 'millStartZ', 'millEndZ', 'passDepth', 'toolDiameter', 'stepOver', 'segmentLength', 'plungeRate', 'cutRate', 'ramp'] },
+    'Mill Stipple': { fields: ['name', 'direction', 'margin', 'lineDistance', 'toolSpeed', 'millRapidZ', 'millStartZ', 'millEndZ', 'passDepth', 'toolDiameter', 'segmentLength', 'plungeRate', 'cutRate'] },
+    'Mill Halftone': { fields: ['name', 'toolAngle', 'millRapidZ', 'millStartZ', 'toolSpeed', 'passDepth', 'segmentLength', 'plungeRate', 'cutRate', 'brightness', 'contrast', 'gamma', 'grayscale', 'shadesOfGray', 'invertColor'] },
+    'Mill Wavy Raster': { fields: ['name', 'toolAngle', 'millRapidZ', 'millStartZ', 'toolSpeed', 'passDepth', 'segmentLength', 'plungeRate', 'cutRate', 'brightness', 'contrast', 'gamma', 'grayscale', 'shadesOfGray', 'invertColor'] },
+    'Mill Heightmap': { fields: ['name', 'toolDiameter', 'millRapidZ', 'millStartZ', 'toolSpeed', 'passDepth', 'segmentLength', 'plungeRate', 'cutRate', 'brightness', 'contrast', 'gamma', 'grayscale', 'shadesOfGray', 'invertColor'] },
     'Lathe Conv Face/Turn': { fields: ['name', 'latheToolBackSide', 'latheRapidToDiameter', 'latheRapidToZ', 'latheStartZ', 'latheRoughingFeed', 'latheRoughingDepth', 'latheFinishFeed', 'latheFinishDepth', 'latheFinishExtraPasses', 'latheFace', 'latheFaceEndDiameter'] }
   };
 
@@ -173,107 +187,72 @@
     return tokens;
   }
 
-  function svgPathToRawPaths(d, pxPerInch) {
-    var factor = 2540 / ((pxPerInch || 96) * 100);
+  function svgPathToRawPaths(d, unitScale, transform) {
+    // unitScale: mm per SVG user unit
+    // transform: optional [a,b,c,d,e,f] SVG transform matrix applied before scale
+    var paths = [];
+    var Snap = window.Snap;
+    if (Snap && Snap.parsePathString) {
+      try {
+        var parsed = Snap.parsePathString(d);
+        var cubics = Snap.path.toCubic(parsed);
+        var currentPath = [];
+        var x = 0, y = 0;
+        function addPoint(px, py) {
+          if (transform) {
+            var tx = transform[0] * px + transform[2] * py + transform[4];
+            var ty = transform[1] * px + transform[3] * py + transform[5];
+            currentPath.push(tx * unitScale, ty * unitScale);
+          } else {
+            currentPath.push(px * unitScale, py * unitScale);
+          }
+        }
+        for (var i = 0; i < cubics.length; i++) {
+          var seg = cubics[i];
+          if (seg[0] === 'M' && seg.length === 3) {
+            if (currentPath.length > 0) { paths.push(currentPath); currentPath = []; }
+            x = seg[1]; y = seg[2];
+            addPoint(x, y);
+          } else if (seg[0] === 'C' && seg.length === 7) {
+            linearizeCubic(x, y, seg[1], seg[2], seg[3], seg[4], seg[5], seg[6], addPoint);
+            x = seg[5]; y = seg[6];
+          }
+        }
+        if (currentPath.length > 0) paths.push(currentPath);
+        return paths;
+      } catch(e) {
+        // fall through
+      }
+    }
+    // Fallback: simple parseSVGPathData for M/L/H/V/C
+    var factor = unitScale;
     var tokens = parseSVGPathData(d);
+    var currentPath = [];
     var x = 0, y = 0;
     var startX = 0, startY = 0;
-    var currentPath = [];
-    var paths = [];
-
     function addPoint(px, py) {
-      currentPath.push(px * factor, py * factor);
+      if (transform) {
+        var tx = transform[0] * px + transform[2] * py + transform[4];
+        var ty = transform[1] * px + transform[3] * py + transform[5];
+        currentPath.push(tx * factor, ty * factor);
+      } else {
+        currentPath.push(px * factor, py * factor);
+      }
     }
-
     for (var i = 0; i < tokens.length; i++) {
-      var t = tokens[i];
-      var cmd = t.cmd;
-      var args = t.args;
-      var j;
-
+      var cmd = tokens[i].cmd, args = tokens[i].args, j;
       switch (cmd) {
-        case 'M':
-          if (currentPath.length > 0) { paths.push(currentPath); currentPath = []; }
-          x = args[0]; y = args[1];
-          addPoint(x, y);
-          startX = x; startY = y;
-          break;
-        case 'm':
-          if (currentPath.length > 0) { paths.push(currentPath); currentPath = []; }
-          x += args[0]; y += args[1];
-          addPoint(x, y);
-          startX = x; startY = y;
-          break;
-        case 'L':
-          for (j = 0; j < args.length; j += 2) { x = args[j]; y = args[j + 1]; addPoint(x, y); }
-          break;
-        case 'l':
-          for (j = 0; j < args.length; j += 2) { x += args[j]; y += args[j + 1]; addPoint(x, y); }
-          break;
-        case 'H':
-          for (j = 0; j < args.length; j++) { x = args[j]; addPoint(x, y); }
-          break;
-        case 'h':
-          for (j = 0; j < args.length; j++) { x += args[j]; addPoint(x, y); }
-          break;
-        case 'V':
-          for (j = 0; j < args.length; j++) { y = args[j]; addPoint(x, y); }
-          break;
-        case 'v':
-          for (j = 0; j < args.length; j++) { y += args[j]; addPoint(x, y); }
-          break;
-        case 'C':
-          for (j = 0; j < args.length; j += 6) {
-            var c1x = args[j], c1y = args[j + 1], c2x = args[j + 2], c2y = args[j + 3];
-            x = args[j + 4]; y = args[j + 5];
-            linearizeCubic(x, y, c1x, c1y, c2x, c2y, x, y, addPoint);
-          }
-          break;
-        case 'c':
-          for (j = 0; j < args.length; j += 6) {
-            var dx1 = args[j], dy1 = args[j + 1], dx2 = args[j + 2], dy2 = args[j + 3];
-            var dx = args[j + 4], dy = args[j + 5];
-            linearizeCubic(x + dx, y + dy, x + dx1, y + dy1, x + dx2, y + dy2, x + dx, y + dy, addPoint);
-            x += dx; y += dy;
-          }
-          break;
-        case 'S':
-          for (j = 0; j < args.length; j += 4) {
-            c2x = args[j]; c2y = args[j + 1]; x = args[j + 2]; y = args[j + 3];
-            addPoint(x, y);
-          }
-          break;
-        case 's':
-          for (j = 0; j < args.length; j += 4) {
-            x += args[j + 2]; y += args[j + 3];
-            addPoint(x, y);
-          }
-          break;
-        case 'Q':
-          for (j = 0; j < args.length; j += 4) {
-            x = args[j + 2]; y = args[j + 3];
-            addPoint(x, y);
-          }
-          break;
-        case 'q':
-          for (j = 0; j < args.length; j += 4) {
-            x += args[j + 2]; y += args[j + 3];
-            addPoint(x, y);
-          }
-          break;
-        case 'Z':
-        case 'z':
-          if (currentPath.length >= 2 && (currentPath[currentPath.length - 2] !== startX * factor || currentPath[currentPath.length - 1] !== startY * factor)) {
-            addPoint(startX, startY);
-          }
-          break;
-        case 'A':
-        case 'a':
-          for (j = 0; j < args.length; j += 7) {
-            x = args[j + 5]; y = args[j + 6];
-            addPoint(x, y);
-          }
-          break;
+        case 'M': if (currentPath.length > 0) { paths.push(currentPath); currentPath = []; } x = args[0]; y = args[1]; addPoint(x, y); startX = x; startY = y; break;
+        case 'm': if (currentPath.length > 0) { paths.push(currentPath); currentPath = []; } x += args[0]; y += args[1]; addPoint(x, y); startX = x; startY = y; break;
+        case 'L': for (j = 0; j < args.length; j += 2) { x = args[j]; y = args[j + 1]; addPoint(x, y); } break;
+        case 'l': for (j = 0; j < args.length; j += 2) { x += args[j]; y += args[j + 1]; addPoint(x, y); } break;
+        case 'H': for (j = 0; j < args.length; j++) { x = args[j]; addPoint(x, y); } break;
+        case 'h': for (j = 0; j < args.length; j++) { x += args[j]; addPoint(x, y); } break;
+        case 'V': for (j = 0; j < args.length; j++) { y = args[j]; addPoint(x, y); } break;
+        case 'v': for (j = 0; j < args.length; j++) { y += args[j]; addPoint(x, y); } break;
+        case 'C': for (j = 0; j < args.length; j += 6) { linearizeCubic(x, y, args[j], args[j+1], args[j+2], args[j+3], args[j+4], args[j+5], addPoint); x = args[j+4]; y = args[j+5]; } break;
+        case 'c': for (j = 0; j < args.length; j += 6) { linearizeCubic(x, y, x+args[j], y+args[j+1], x+args[j+2], y+args[j+3], x+args[j+4], y+args[j+5], addPoint); x += args[j+4]; y += args[j+5]; } break;
+        case 'Z': case 'z': if (currentPath.length >= 2 && (currentPath[currentPath.length-2] !== startX*factor || currentPath[currentPath.length-1] !== startY*factor)) addPoint(startX, startY); break;
       }
     }
     if (currentPath.length > 0) paths.push(currentPath);
@@ -292,107 +271,196 @@
     }
   }
 
+  function parseSvgTransform(str) {
+    if (!str || !str.trim()) return null;
+    var result = [1, 0, 0, 1, 0, 0];
+    var re = /(\w+)\s*\(([^)]*)\)/g;
+    var m;
+    while ((m = re.exec(str)) !== null) {
+      var fn = m[1];
+      var args = m[2].trim().split(/[\s,]+/).map(parseFloat);
+      var mat;
+      switch (fn) {
+        case 'matrix':
+          mat = [args[0], args[1], args[2], args[3], args[4], args[5]];
+          break;
+        case 'translate':
+          mat = [1, 0, 0, 1, args[0], args[1] || 0];
+          break;
+        case 'scale':
+          mat = [args[0] || 1, 0, 0, args[1] || args[0] || 1, 0, 0];
+          break;
+        case 'rotate': {
+          var ang = args[0] * Math.PI / 180;
+          var cos = Math.cos(ang), sin = Math.sin(ang);
+          if (args.length >= 3) {
+            var cx = args[1], cy = args[2];
+            mat = [cos, sin, -sin, cos, cx - cos * cx + sin * cy, cy - sin * cx - cos * cy];
+          } else {
+            mat = [cos, sin, -sin, cos, 0, 0];
+          }
+          break;
+        }
+        case 'skewX': {
+          var t = Math.tan(args[0] * Math.PI / 180);
+          mat = [1, 0, t, 1, 0, 0];
+          break;
+        }
+        case 'skewY': {
+          var t = Math.tan(args[0] * Math.PI / 180);
+          mat = [1, t, 0, 1, 0, 0];
+          break;
+        }
+        default:
+          continue;
+      }
+      result = composeMatrices(result, mat);
+    }
+    return result;
+  }
+
+  function composeMatrices(m1, m2) {
+    return [
+      m1[0] * m2[0] + m1[2] * m2[1],
+      m1[1] * m2[0] + m1[3] * m2[1],
+      m1[0] * m2[2] + m1[2] * m2[3],
+      m1[1] * m2[2] + m1[3] * m2[3],
+      m1[0] * m2[4] + m1[2] * m2[5] + m1[4],
+      m1[1] * m2[4] + m1[3] * m2[5] + m1[5]
+    ];
+  }
+
+  function parseSVGLength(val) {
+    if (!val) return null;
+    var m = String(val).trim().match(/^([\d.]+)\s*(mm|cm|in|pt|pc|px)?$/);
+    if (!m) return null;
+    return { value: parseFloat(m[1]), unit: m[2] || 'px' };
+  }
+
+  function svgUnitToMm(val, pxPerInch) {
+    if (!val) return null;
+    var p = parseSVGLength(val);
+    if (!p) return null;
+    switch (p.unit) {
+      case 'mm': return p.value;
+      case 'cm': return p.value * 10;
+      case 'in': return p.value * 25.4;
+      case 'pt': return p.value * 25.4 / 72;
+      case 'pc': return p.value * 12 * 25.4 / 72;
+      default: return p.value * 25.4 / (pxPerInch || 96);
+    }
+  }
+
   function parseSVGString(svgString, pxPerInch) {
     var parser = new DOMParser();
     var doc = parser.parseFromString(svgString, 'image/svg+xml');
     var tags = [];
     var svg = doc.documentElement;
     var viewBox = svg.getAttribute('viewBox');
-    var svgW, svgH;
-    if (viewBox) {
-      var vb = viewBox.split(/[\s,]+/).map(parseFloat);
-      svgW = vb[2];
-      svgH = vb[3];
+    var vb = viewBox ? viewBox.split(/[\s,]+/).map(parseFloat) : null;
+    var vbW = vb ? vb[2] : null;
+    var vbH = vb ? vb[3] : null;
+
+    // Compute mm per user unit from width/height attributes
+    var widthMm = svgUnitToMm(svg.getAttribute('width'), pxPerInch);
+    var heightMm = svgUnitToMm(svg.getAttribute('height'), pxPerInch);
+    var svgW = vbW || (widthMm ? widthMm : 800);
+    var svgH = vbH || (heightMm ? heightMm : 600);
+
+    var mmPerUnit;
+    if (vbW && widthMm) {
+      mmPerUnit = widthMm / vbW;
+    } else if (vbH && heightMm) {
+      mmPerUnit = heightMm / vbH;
+    } else if (vbW && !widthMm) {
+      mmPerUnit = 25.4 / (pxPerInch || 96); // px default
     } else {
-      svgW = parseFloat(svg.getAttribute('width')) || 800;
-      svgH = parseFloat(svg.getAttribute('height')) || 600;
+      mmPerUnit = 25.4 / (pxPerInch || 96);
     }
+    // Convert to mm internal units
+    var unitScale = mmPerUnit;
 
-    var elements = svg.querySelectorAll('path, rect, circle, ellipse, line, polyline, polygon');
-    for (var i = 0; i < elements.length; i++) {
-      var el = elements[i];
+    function walkSvg(el, parentTf) {
       var tagName = el.tagName.toLowerCase();
-      var rawPaths;
-      var stroke = el.getAttribute('stroke') || '#000';
-      var fill = el.getAttribute('fill') || '#000';
-      var strokeWidth = parseFloat(el.getAttribute('stroke-width')) || 1;
-      var transform = el.getAttribute('transform') || '';
-      var d = '';
-
-      if (tagName === 'path') {
-        d = el.getAttribute('d') || '';
-      } else if (tagName === 'rect') {
-        var rx = parseFloat(el.getAttribute('x')) || 0;
-        var ry = parseFloat(el.getAttribute('y')) || 0;
-        var rw = parseFloat(el.getAttribute('width')) || 0;
-        var rh = parseFloat(el.getAttribute('height')) || 0;
-        d = 'M' + rx + ',' + ry + ' L' + (rx + rw) + ',' + ry + ' L' + (rx + rw) + ',' + (ry + rh) + ' L' + rx + ',' + (ry + rh) + ' Z';
-      } else if (tagName === 'circle') {
-        var cx = parseFloat(el.getAttribute('cx')) || 0;
-        var cy = parseFloat(el.getAttribute('cy')) || 0;
-        var r = parseFloat(el.getAttribute('r')) || 0;
-        d = approxCircle(cx, cy, r);
-      } else if (tagName === 'ellipse') {
-        var ecx = parseFloat(el.getAttribute('cx')) || 0;
-        var ecy = parseFloat(el.getAttribute('cy')) || 0;
-        var erx = parseFloat(el.getAttribute('rx')) || 0;
-        var ery = parseFloat(el.getAttribute('ry')) || 0;
-        d = approxEllipse(ecx, ecy, erx, ery);
-      } else if (tagName === 'line') {
-        var lx1 = parseFloat(el.getAttribute('x1')) || 0;
-        var ly1 = parseFloat(el.getAttribute('y1')) || 0;
-        var lx2 = parseFloat(el.getAttribute('x2')) || 0;
-        var ly2 = parseFloat(el.getAttribute('y2')) || 0;
-        d = 'M' + lx1 + ',' + ly1 + ' L' + lx2 + ',' + ly2;
-      } else if (tagName === 'polyline' || tagName === 'polygon') {
-        var points = el.getAttribute('points') || '';
-        d = 'M' + points.replace(/\s+/g, ' ').trim().split(' ').map(function (p, idx) {
-          return idx === 0 ? p : p;
-        }).join(' L');
-        if (tagName === 'polygon') d += ' Z';
+      var tf = parentTf;
+      var tStr = el.getAttribute('transform');
+      if (tStr) {
+        var m = parseSvgTransform(tStr);
+        if (m) tf = composeMatrices(tf, m);
       }
+      var leaf = tagName === 'path' || tagName === 'rect' || tagName === 'circle' || tagName === 'ellipse' || tagName === 'line' || tagName === 'polyline' || tagName === 'polygon';
+      if (leaf) {
+        var stroke = el.getAttribute('stroke') || '#000';
+        var fill = el.getAttribute('fill') || '#000';
+        var strokeWidth = parseFloat(el.getAttribute('stroke-width')) || 1;
+        var d = '';
 
-      if (d) {
-        rawPaths = svgPathToRawPaths(d, pxPerInch);
-        tags.push({
-          tagName: tagName,
-          d: d,
-          rawPaths: rawPaths,
-          stroke: stroke,
-          fill: fill,
-          strokeWidth: strokeWidth,
-          transform: transform
-        });
+        if (tagName === 'path') {
+          d = el.getAttribute('d') || '';
+        } else if (tagName === 'rect') {
+          var rx = parseFloat(el.getAttribute('x')) || 0;
+          var ry = parseFloat(el.getAttribute('y')) || 0;
+          var rw = parseFloat(el.getAttribute('width')) || 0;
+          var rh = parseFloat(el.getAttribute('height')) || 0;
+          d = 'M' + rx + ',' + ry + ' L' + (rx + rw) + ',' + ry + ' L' + (rx + rw) + ',' + (ry + rh) + ' L' + rx + ',' + (ry + rh) + ' Z';
+        } else if (tagName === 'circle') {
+          var cx = parseFloat(el.getAttribute('cx')) || 0;
+          var cy = parseFloat(el.getAttribute('cy')) || 0;
+          var r = parseFloat(el.getAttribute('r')) || 0;
+          d = 'M' + (cx + r) + ',' + cy;
+          for (var step = 1; step <= 36; step++) {
+            var a = (step / 36) * Math.PI * 2;
+            d += ' L' + (cx + r * Math.cos(a)) + ',' + (cy + r * Math.sin(a));
+          }
+          d += ' Z';
+        } else if (tagName === 'ellipse') {
+          var ecx = parseFloat(el.getAttribute('cx')) || 0;
+          var ecy = parseFloat(el.getAttribute('cy')) || 0;
+          var erx = parseFloat(el.getAttribute('rx')) || 0;
+          var ery = parseFloat(el.getAttribute('ry')) || 0;
+          d = 'M' + (ecx + erx) + ',' + ecy;
+          for (var step = 1; step <= 48; step++) {
+            var a = (step / 48) * Math.PI * 2;
+            d += ' L' + (ecx + erx * Math.cos(a)) + ',' + (ecy + ery * Math.sin(a));
+          }
+          d += ' Z';
+        } else if (tagName === 'line') {
+          var lx1 = parseFloat(el.getAttribute('x1')) || 0;
+          var ly1 = parseFloat(el.getAttribute('y1')) || 0;
+          var lx2 = parseFloat(el.getAttribute('x2')) || 0;
+          var ly2 = parseFloat(el.getAttribute('y2')) || 0;
+          d = 'M' + lx1 + ',' + ly1 + ' L' + lx2 + ',' + ly2;
+        } else if (tagName === 'polyline' || tagName === 'polygon') {
+          var points = el.getAttribute('points') || '';
+          d = 'M' + points.trim().split(/[\s,]+/).join(' L');
+          if (tagName === 'polygon') d += ' Z';
+        }
+
+        if (d) {
+          var rawPaths = svgPathToRawPaths(d, unitScale, tf);
+          tags.push({
+            tagName: tagName,
+            rawPaths: rawPaths,
+            stroke: stroke,
+            fill: fill,
+            strokeWidth: strokeWidth
+          });
+        }
+      }
+      if (!leaf) {
+        for (var ci = 0; ci < el.children.length; ci++) {
+          var child = el.children[ci];
+          var ctag = child.tagName.toLowerCase();
+          if (ctag !== 'defs' && ctag !== 'style' && ctag !== 'script' && ctag !== 'title' && ctag !== 'desc' && ctag !== 'metadata') {
+            walkSvg(child, tf);
+          }
+        }
       }
     }
 
-    return {
-      tags: tags,
-      width: svgW,
-      height: svgH
-    };
-  }
+    walkSvg(svg, [1, 0, 0, 1, 0, 0]);
 
-  function approxCircle(cx, cy, r) {
-    var steps = 36;
-    var d = 'M' + (cx + r) + ',' + cy;
-    for (var i = 1; i <= steps; i++) {
-      var a = (i / steps) * Math.PI * 2;
-      d += ' L' + (cx + r * Math.cos(a)) + ',' + (cy + r * Math.sin(a));
-    }
-    d += ' Z';
-    return d;
-  }
-
-  function approxEllipse(cx, cy, rx, ry) {
-    var steps = 48;
-    var d = 'M' + (cx + rx) + ',' + cy;
-    for (var i = 1; i <= steps; i++) {
-      var a = (i / steps) * Math.PI * 2;
-      d += ' L' + (cx + rx * Math.cos(a)) + ',' + (cy + ry * Math.sin(a));
-    }
-    d += ' Z';
-    return d;
+    return { tags: tags, width: svgW, height: svgH, heightMm: svgH * mmPerUnit };
   }
 
   function promisedImage(dataURL) {
@@ -506,11 +574,38 @@
 
   ui.renderDocuments = function () {
     // File list is now shown via showFileList() modal on demand
+    showEmptyState();
   };
 
   // ---- Operations ---------------------------------------------------------
 
   ui.renderOperations = function () {};
+  
+  function showEmptyState() {
+    var $es = $('#lw5-empty-state');
+    if (LW.getDocuments().length === 0) {
+      if ($es.length) return;
+      $('<div id="lw5-empty-state" class="lw5-empty-state"> \
+        <div class="lw5-empty-state-content"> \
+          <i class="fas fa-file-import" style="font-size:64px;opacity:0.3"></i> \
+          <h2>No documents loaded</h2> \
+          <p>Drop files here or click to open</p> \
+          <button class="lw5-tp-btn lw5-tp-btn-primary" style="font-size:18px;padding:12px 32px" id="lw5-empty-open"> \
+            <i class="fas fa-folder-open"></i> Open File \
+          </button> \
+        </div> \
+      </div>').appendTo('#lw5-workspace');
+      $('#lw5-empty-state').on('click', function () { document.getElementById('file-input').click(); });
+      $('#lw5-empty-state').on('dragover', function (e) { e.preventDefault(); e.stopPropagation(); });
+      $('#lw5-empty-state').on('drop', function (e) {
+        e.preventDefault(); e.stopPropagation();
+        var files = e.originalEvent.dataTransfer.files;
+        if (files.length) ui.loadDocument(files);
+      });
+    } else {
+      $es.remove();
+    }
+  }
 
   function setupDocDropZone() {
     // File drop handled on the canvas
@@ -699,13 +794,19 @@
           return function (e) {
             try {
               var result = parseSVGString(e.target.result, LW.getState().settings.pxPerInch || 96);
+              var yShift = result.heightMm || 0;
               var docs = [];
               var _si = 0;
               for (var t = 0; t < result.tags.length; t++) {
                 var tag = result.tags[t];
                 var tagPaths = [];
                 for (var p = 0; p < tag.rawPaths.length; p++) {
-                  tagPaths.push(tag.rawPaths[p]);
+                  var src = tag.rawPaths[p];
+                  var shifted = [];
+                  for (var k = 0; k < src.length; k += 2) {
+                    shifted.push(src[k], src[k + 1] - yShift);
+                  }
+                  tagPaths.push(shifted);
                 }
                 if (tagPaths.length > 0) {
                   var svgStroke = tag.stroke || '#000000';
@@ -734,8 +835,8 @@
                 ui.showToast('Loaded ' + docs.length + ' entities from ' + f.name, 'success');
               }
             } catch (err) {
-              console.error('DXF parse error:', err);
-              ui.showToast('Error parsing DXF: ' + f.name, 'error');
+              console.error('SVG parse error:', err);
+              ui.showToast('Error parsing SVG: ' + f.name, 'error');
             }
           };
         })(file);
@@ -854,6 +955,30 @@
     var settings = state.settings;
     var documents = state.documents;
     var operations = state.operations;
+
+    // Fast path: use computed toolpaths if available
+    var toolpaths = typeof LW.getToolpaths === 'function' ? LW.getToolpaths() : [];
+    var computedToolpaths = toolpaths.filter(function (tp) { return tp.computed && tp.computed.camPaths && tp.computed.camPaths.length; });
+    if (computedToolpaths.length) {
+      if (!LW.gcode || !LW.gcode.getGcodeFromToolpaths) {
+        ui.showToast('GCode engine not available', 'error');
+        return;
+      }
+      LW.dispatch({ type: 'GCODE_UPDATE', payload: { gcoding: { enable: true, percent: 0 } } });
+      setTimeout(function () {
+        try {
+          var gcode = LW.gcode.getGcodeFromToolpaths(computedToolpaths, settings);
+          LW.dispatch({ type: 'GCODE_UPDATE', payload: { content: gcode, dirty: true, gcoding: { enable: false, percent: 100 } } });
+          ui.showToast('G-Code generated (' + gcode.split('\n').length + ' lines)', 'success');
+          if (typeof onPrinted === 'function') onPrinted(gcode);
+        } catch (err) {
+          LW.dispatch({ type: 'GCODE_UPDATE', payload: { gcoding: { enable: false, percent: 0 } } });
+          ui.showToast('G-Code generation failed: ' + err.message, 'error');
+          console.error('gcode generation error:', err);
+        }
+      }, 50);
+      return;
+    }
 
     if (!operations.length) {
       ui.showToast('No operations to generate G-Code', 'warning');
@@ -1191,6 +1316,134 @@
     });
   };
 
+  // ---- Toolpath Panel -----------------------------------------------------
+
+  function getToolpathTypeIcon(type) {
+    var icons = {
+      'none': 'fa-ban',
+      'cut_on_line': 'fa-vector-square', 'cut_outside': 'fa-vector-square', 'cut_inside': 'fa-vector-square',
+      'laser_fill': 'fa-fill-drip', 'laser_hatch': 'fa-border-all', 'laser_crosshatch': 'fa-border-all',
+      'laser_spiral': 'fa-circle', 'laser_concentric': 'fa-circle', 'laser_stipple': 'fa-circle',
+      'mill_pocket': 'fa-industry', 'mill_cut': 'fa-cut', 'mill_cut_inside': 'fa-cut', 'mill_cut_outside': 'fa-cut',
+      'mill_vcarve': 'fa-gem', 'mill_hatch': 'fa-border-all', 'mill_crosshatch': 'fa-border-all',
+      'mill_spiral': 'fa-circle', 'mill_concentric': 'fa-circle', 'mill_stipple': 'fa-circle',
+      'raster': 'fa-image', 'raster_merge': 'fa-layer-group',
+      'mill_halftone': 'fa-image', 'mill_wavy_raster': 'fa-image', 'mill_heightmap': 'fa-image',
+      'engrave': 'fa-paint-brush'
+    };
+    return icons[type] || 'fa-wrench';
+  }
+
+  function renderToolpathPanel() {
+    var toolpaths = LW.getToolpaths();
+    var $list = $('#lw5-tp-list');
+    if (!$list.length) return;
+    if (!toolpaths || !toolpaths.length) {
+      $list.html('<div class="lw5-tp-empty">Select vector shapes, then click <strong>Add</strong> to create a toolpath</div>');
+      return;
+    }
+    var html = '';
+    for (var i = 0; i < toolpaths.length; i++) {
+      var tp = toolpaths[i];
+      var tpData = tp.toolpath || {};
+      var type = tpData.type || 'none';
+      var icon = getToolpathTypeIcon(type);
+      var typeLabel = type.replace(/_/g, ' ');
+      var entityCount = tp.entityIds ? tp.entityIds.length : 0;
+      var hasComputed = tp.computed && tp.computed.camPaths;
+      var statusClass = hasComputed ? 'done' : '';
+      var statusText = hasComputed ? 'ready' : (tp.computed ? 'busy' : '');
+      var visibleIcon = tp.visible !== false ? 'fa-eye' : 'fa-eye-slash';
+      html +=
+        '<div class="lw5-tp-item" data-tp-id="' + tp.id + '">' +
+          '<button class="lw5-tp-vis" title="' + (tp.visible !== false ? 'Hide' : 'Show') + '"><i class="fas ' + visibleIcon + '"></i></button>' +
+          '<span class="lw5-tp-name">' + (tp.name || 'Toolpath') + '</span>' +
+          '<span class="lw5-tp-entity-count">' + entityCount + '</span>' +
+          '<span class="lw5-tp-type-icon" title="' + typeLabel + '"><i class="fas ' + icon + '"></i></span>' +
+          (statusText ? '<span class="lw5-tp-status ' + statusClass + '">' + statusText + '</span>' : '') +
+          '<button class="lw5-tp-up" title="Move up"><i class="fas fa-chevron-up"></i></button>' +
+          '<button class="lw5-tp-down" title="Move down"><i class="fas fa-chevron-down"></i></button>' +
+          '<button class="lw5-tp-del" title="Delete toolpath"><i class="fas fa-trash"></i></button>' +
+        '</div>';
+    }
+    $list.html(html);
+  }
+
+  function initToolpathPanel() {
+    // Show the panel
+    $('#lw5-tp-panel').show();
+
+    // Add toolpath from selected entities
+    $('#lw5-tp-add').on('click', function () {
+      var selectedIds = LW.draw && LW.draw.getSelected ? LW.draw.getSelected() : [];
+      var docs = LW.getDocuments();
+      var vectorIds = selectedIds.filter(function (id) {
+        var d = docs.filter(function (x) { return x.id === id; })[0];
+        return d && d.rawPaths && d.rawPaths.length && d.type !== 'image';
+      });
+      if (!vectorIds.length) {
+        ui.showToast('Select vector shapes on the canvas first', 'warning');
+        return;
+      }
+      var tp = LW.createToolpath(vectorIds);
+      LW.dispatch({ type: 'TOOLPATH_ADD', payload: tp });
+      renderToolpathPanel();
+      ui.showToast('Toolpath "' + tp.name + '" created', 'info');
+      // Open config popup for the new toolpath
+      if (window.showToolpathPopup) window.showToolpathPopup(tp, null, null, true);
+    });
+
+    // Delegated events on the list
+    $('#lw5-tp-list').on('click', '.lw5-tp-item', function (e) {
+      // Ignore clicks on buttons
+      if ($(e.target).closest('button').length) return;
+      var id = $(this).data('tp-id');
+      var tp = LW.getToolpaths().filter(function (t) { return t.id === id; })[0];
+      if (tp) {
+        if (window.showToolpathPopup) window.showToolpathPopup(tp, null, null, true);
+      }
+    });
+
+    $('#lw5-tp-list').on('click', '.lw5-tp-vis', function () {
+      var id = $(this).closest('.lw5-tp-item').data('tp-id');
+      var tp = LW.getToolpaths().filter(function (t) { return t.id === id; })[0];
+      if (tp) {
+        LW.dispatch({ type: 'TOOLPATH_UPDATE', payload: { id: id, changes: { visible: !(tp.visible !== false) } } });
+        renderToolpathPanel();
+      }
+    });
+
+    $('#lw5-tp-list').on('click', '.lw5-tp-del', function () {
+      var id = $(this).closest('.lw5-tp-item').data('tp-id');
+      LW.dispatch({ type: 'TOOLPATH_REMOVE', payload: id });
+      renderToolpathPanel();
+    });
+
+    $('#lw5-tp-list').on('click', '.lw5-tp-up', function () {
+      var id = $(this).closest('.lw5-tp-item').data('tp-id');
+      var tps = LW.getToolpaths();
+      var idx = tps.findIndex(function (t) { return t.id === id; });
+      if (idx > 0) {
+        var ids = tps.map(function (t) { return t.id; });
+        ids.splice(idx - 1, 0, ids.splice(idx, 1)[0]);
+        LW.dispatch({ type: 'TOOLPATH_REORDER', payload: ids });
+        renderToolpathPanel();
+      }
+    });
+
+    $('#lw5-tp-list').on('click', '.lw5-tp-down', function () {
+      var id = $(this).closest('.lw5-tp-item').data('tp-id');
+      var tps = LW.getToolpaths();
+      var idx = tps.findIndex(function (t) { return t.id === id; });
+      if (idx < tps.length - 1) {
+        var ids = tps.map(function (t) { return t.id; });
+        ids.splice(idx + 1, 0, ids.splice(idx, 1)[0]);
+        LW.dispatch({ type: 'TOOLPATH_REORDER', payload: ids });
+        renderToolpathPanel();
+      }
+    });
+  }
+
   // ---- Init ---------------------------------------------------------------
 
   ui.init = function () {
@@ -1200,9 +1453,11 @@
     initOverlayToggle();
     initTransformBar();
     setupDocDropZone();
+    initToolpathPanel();
 
     LW.on('stateChanged', function () {
       ui.renderDocuments();
+      renderToolpathPanel();
     });
 
     ui.renderDocuments();
@@ -1210,6 +1465,7 @@
     ui.renderSettings();
     ui.renderFloatingControls();
     updateGcodeProgress();
+    renderToolpathPanel();
 
     if (typeof marked !== 'undefined' && window.marked) {
       var releaseInfo = document.getElementById('release-info');
@@ -1314,22 +1570,423 @@
     });
   }
 
-  function showToolpathPopup(doc, canvasPos) {
+  function generatePreviewGcode(doc, geometryOverride) {
+    var tp = doc.toolpath;
+    if (!tp || tp.type === 'none') return '';
+    if (!LW.mesh || !LW.cam) return '';
+    var mmToClipperScale = LW.mesh.mmToClipperScale || 50000000;
+    var scale = 1 / mmToClipperScale;
+    var geometry = geometryOverride || (doc.rawPaths ? LW.mesh.rawPathsToClipperPaths(doc.rawPaths, doc.transform2d) : null);
+    if (!geometry || !geometry.length) return '';
+    var t = tp.type;
+    var camPaths;
+    try {
+      if (t === 'cut_on_line' || t === 'engrave') {
+        camPaths = LW.cam.cut(geometry, [], false);
+      } else if (t === 'cut_outside' || t === 'laser_cut_outside') {
+        if (tp.margin) geometry = LW.mesh.offset(geometry, tp.margin * mmToClipperScale);
+        camPaths = LW.cam.cut(geometry, [], false);
+      } else if (t === 'cut_inside' || t === 'laser_cut_inside') {
+        if (tp.margin) geometry = LW.mesh.offset(geometry, -tp.margin * mmToClipperScale);
+        camPaths = LW.cam.cut(geometry, [], false);
+      } else if (t === 'pocket' || t === 'laser_fill' || t === 'laser_hatch') {
+        camPaths = LW.cam.fillPath(geometry, (tp.lineDistance || 0.1) * mmToClipperScale, tp.lineAngle || 0);
+      } else if (t === 'laser_crosshatch') {
+        var ld = (tp.lineDistance || 0.1) * mmToClipperScale;
+        camPaths = LW.cam.fillPath(geometry, ld, tp.lineAngle || 0).concat(LW.cam.fillPath(geometry, ld, tp.crossAngle || 90));
+      } else if (t === 'laser_spiral') {
+        camPaths = LW.cam.pocket(geometry, (tp.lineDistance || 0.1) * mmToClipperScale, tp.stepOver || 10, false);
+      } else if (t === 'laser_concentric') {
+        camPaths = LW.cam.insideOutside(geometry, (tp.lineDistance || 0.1) * mmToClipperScale, true, (tp.cutWidth || 0) * mmToClipperScale, tp.stepOver || 10, false, false);
+      } else if (t === 'laser_stipple') {
+        camPaths = LW.cam.fillPath(geometry, (tp.lineDistance || 0.1) * mmToClipperScale, tp.lineAngle || 0);
+      } else if (t === 'mill_pocket') {
+        camPaths = LW.cam.pocket(geometry, (tp.toolDiameter || 3) * mmToClipperScale, tp.stepOver || 10, (tp.direction || 'Conventional') === 'Climb');
+      } else if (t === 'mill_cut' || t === 'mill_cut_inside' || t === 'mill_cut_outside') {
+        camPaths = LW.cam.cut(geometry, [], (tp.direction || 'Conventional') === 'Climb');
+      } else if (t === 'mill_hatch') {
+        camPaths = LW.cam.fillPath(geometry, (tp.lineDistance || 0.1) * mmToClipperScale, tp.lineAngle || 0);
+      } else if (t === 'mill_crosshatch') {
+        var ld = (tp.lineDistance || 0.1) * mmToClipperScale;
+        camPaths = LW.cam.fillPath(geometry, ld, tp.lineAngle || 0).concat(LW.cam.fillPath(geometry, ld, tp.crossAngle || 90));
+      } else if (t === 'mill_spiral') {
+        camPaths = LW.cam.pocket(geometry, (tp.toolDiameter || 3) * mmToClipperScale, tp.stepOver || 10, (tp.direction || 'Conventional') === 'Climb');
+      } else if (t === 'mill_concentric') {
+        camPaths = LW.cam.insideOutside(geometry, (tp.toolDiameter || 3) * mmToClipperScale, true, (tp.cutWidth || 0) * mmToClipperScale, tp.stepOver || 10, (tp.direction || 'Conventional') === 'Climb', true);
+      } else if (t === 'mill_stipple') {
+        camPaths = LW.cam.fillPath(geometry, (tp.lineDistance || 0.1) * mmToClipperScale, tp.lineAngle || 0);
+      } else {
+        return '';
+      }
+    } catch (e) {
+      return '';
+    }
+    if (!camPaths || !camPaths.length) return '';
+    var prec = 3;
+    var lines = [];
+    for (var i = 0; i < camPaths.length; i++) {
+      var pp = camPaths[i].path;
+      if (!pp || !pp.length) continue;
+      lines.push('G0 X' + (pp[0].X * scale).toFixed(prec) + ' Y' + (pp[0].Y * scale).toFixed(prec));
+      for (var j = 1; j < pp.length; j++) {
+        lines.push('G1 X' + (pp[j].X * scale).toFixed(prec) + ' Y' + (pp[j].Y * scale).toFixed(prec));
+      }
+    }
+    return lines.join('\n');
+  }
+
+  // ---- Calculate progress dialog ------------------------------------------
+
+  var _calcWorker = null;
+
+  function showCalculateDialog() {
+    $('#lw5-calc-overlay').remove();
+    var html =
+      '<div class="lw5-modal-overlay" id="lw5-calc-overlay">' +
+        '<div class="lw5-dialog" style="width:300px;text-align:center">' +
+          '<div class="lw5-dialog-body" style="flex-direction:column;padding:24px">' +
+            '<i class="fas fa-spinner fa-pulse" style="font-size:32px;margin-bottom:16px;color:var(--primary)"></i>' +
+            '<div style="font-size:14px;margin-bottom:4px">Calculating Toolpath...</div>' +
+            '<div style="font-size:11px;color:var(--text-muted)" id="lw5-calc-status"></div>' +
+            '<button class="lw5-btn lw5-btn-xs" id="lw5-calc-cancel" style="margin-top:12px">Cancel</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    $(html).appendTo(document.body);
+    $('#lw5-calc-cancel').on('click', function () { hideCalculateDialog(); });
+  }
+
+  function hideCalculateDialog() {
+    if (_calcWorker) { _calcWorker.terminate(); _calcWorker = null; }
+    $('#lw5-calc-overlay').remove();
+  }
+
+  function updateCalcStatus(msg) {
+    $('#lw5-calc-status').text(msg);
+  }
+
+  // ---- Preview worker ------------------------------------------------------
+
+  function runPreviewWorker(geometry, toolpath, mmToClipperScale, onDone) {
+    var basePath = window.location.href.replace(/\/[^/]*$/, '/');
+    var libBoot = [
+      'var window = self;',
+      'importScripts("' + basePath + 'vendors/clipper-lib.js");',
+      'importScripts("' + basePath + 'vendors/poly2tri.js");',
+      'var Module = { locateFile: function(p) { return "' + basePath + 'dependencies/cam-cpp/" + p; } };',
+      'importScripts("' + basePath + 'dependencies/cam-cpp/web-cam-cpp.js");',
+      'importScripts("' + basePath + 'js/lw5-mesh.js");',
+      'importScripts("' + basePath + 'js/lw5-cam.js");',
+      'self.__mesh__ = LW.mesh;',
+      'self.__cam__ = LW.cam;',
+    ].join('\n');
+
+    var workerCode = [
+      'self.onmessage = function(e) {',
+      '  var d = e.data;',
+      '  function run() {',
+      '    var mesh = self.__mesh__;',
+      '    var cam = self.__cam__;',
+      '    var tp = d.tp;',
+      '    var geometry = d.geometry;',
+      '    var mm = d.mmToClipperScale;',
+      '    var scale = 1 / mm;',
+      '    var camPaths;',
+      '    try {',
+      '      var t = tp.type;',
+      '      if (t === "cut_on_line" || t === "engrave") {',
+      '        camPaths = cam.cut(geometry, [], false);',
+      '      } else if (t === "cut_outside" || t === "laser_cut_outside") {',
+      '        if (tp.margin) geometry = mesh.offset(geometry, tp.margin * mm);',
+      '        camPaths = cam.cut(geometry, [], false);',
+      '      } else if (t === "cut_inside" || t === "laser_cut_inside") {',
+      '        if (tp.margin) geometry = mesh.offset(geometry, -tp.margin * mm);',
+      '        camPaths = cam.cut(geometry, [], false);',
+      '      } else if (t === "pocket" || t === "laser_fill" || t === "laser_hatch") {',
+      '        camPaths = cam.fillPath(geometry, (tp.lineDistance || 0.1) * mm, tp.lineAngle || 0);',
+      '      } else if (t === "laser_crosshatch") {',
+      '        var ld = (tp.lineDistance || 0.1) * mm;',
+      '        camPaths = cam.fillPath(geometry, ld, tp.lineAngle || 0).concat(cam.fillPath(geometry, ld, tp.crossAngle || 90));',
+      '      } else if (t === "laser_spiral") {',
+      '        camPaths = cam.pocket(geometry, (tp.lineDistance || 0.1) * mm, tp.stepOver || 10, false);',
+      '      } else if (t === "laser_concentric") {',
+      '        camPaths = cam.insideOutside(geometry, (tp.lineDistance || 0.1) * mm, true, (tp.cutWidth || 0) * mm, tp.stepOver || 10, false, false);',
+      '      } else if (t === "laser_stipple") {',
+      '        camPaths = cam.fillPath(geometry, (tp.lineDistance || 0.1) * mm, tp.lineAngle || 0);',
+      '      } else if (t === "mill_pocket") {',
+      '        camPaths = cam.pocket(geometry, (tp.toolDiameter || 3) * mm, tp.stepOver || 10, (tp.direction || "Conventional") === "Climb");',
+      '      } else if (t === "mill_cut" || t === "mill_cut_inside" || t === "mill_cut_outside") {',
+      '        camPaths = cam.cut(geometry, [], (tp.direction || "Conventional") === "Climb");',
+      '      } else if (t === "mill_hatch") {',
+      '        camPaths = cam.fillPath(geometry, (tp.lineDistance || 0.1) * mm, tp.lineAngle || 0);',
+      '      } else if (t === "mill_crosshatch") {',
+      '        var ld = (tp.lineDistance || 0.1) * mm;',
+      '        camPaths = cam.fillPath(geometry, ld, tp.lineAngle || 0).concat(cam.fillPath(geometry, ld, tp.crossAngle || 90));',
+      '      } else if (t === "mill_spiral") {',
+      '        camPaths = cam.pocket(geometry, (tp.toolDiameter || 3) * mm, tp.stepOver || 10, (tp.direction || "Conventional") === "Climb");',
+      '      } else if (t === "mill_concentric") {',
+      '        camPaths = cam.insideOutside(geometry, (tp.toolDiameter || 3) * mm, true, (tp.cutWidth || 0) * mm, tp.stepOver || 10, (tp.direction || "Conventional") === "Climb", true);',
+      '      } else if (t === "mill_stipple") {',
+      '        camPaths = cam.fillPath(geometry, (tp.lineDistance || 0.1) * mm, tp.lineAngle || 0);',
+      '      }',
+      '    } catch(e) {',
+      '      self.postMessage(JSON.stringify({ event: "onError", error: e.toString() }));',
+      '      return;',
+      '    }',
+      '    if (!camPaths || !camPaths.length) {',
+      '      self.postMessage(JSON.stringify({ event: "onDone", gcode: "" }));',
+      '      return;',
+      '    }',
+      '    var lines = [];',
+      '    for (var i = 0; i < camPaths.length; i++) {',
+      '      var pp = camPaths[i].path;',
+      '      if (!pp || !pp.length) continue;',
+      '      lines.push("G0 X" + (pp[0].X * scale).toFixed(3) + " Y" + (pp[0].Y * scale).toFixed(3));',
+      '      for (var j = 1; j < pp.length; j++) {',
+      '        lines.push("G1 X" + (pp[j].X * scale).toFixed(3) + " Y" + (pp[j].Y * scale).toFixed(3));',
+      '      }',
+      '    }',
+      '    self.postMessage(JSON.stringify({ event: "onDone", gcode: lines.join("\\n") }));',
+      '  }',
+      '  if (typeof Module !== "undefined" && typeof Module._separateTabs === "function") {',
+      '    run();',
+      '  } else if (typeof Module !== "undefined") {',
+      '    var _waitOrig = Module.onRuntimeInitialized;',
+      '    Module.onRuntimeInitialized = function() {',
+      '      if (_waitOrig) _waitOrig();',
+      '      run();',
+      '    };',
+      '  } else {',
+      '    setTimeout(run, 100);',
+      '  }',
+      '};'
+    ].join('\n');
+
+    hideCalculateDialog();
+    showCalculateDialog();
+
+    var worker = new Worker(URL.createObjectURL(new Blob([libBoot + '\n' + workerCode])));
+    _calcWorker = worker;
+
+    worker.onmessage = function (e) {
+      var data = JSON.parse(e.data);
+      if (data.event === 'onDone') {
+        hideCalculateDialog();
+        if (typeof onDone === 'function') onDone(data.gcode);
+      } else if (data.event === 'onError') {
+        hideCalculateDialog();
+        if (typeof onDone === 'function') onDone('');
+      }
+    };
+
+    worker.postMessage({ tp: toolpath, geometry: geometry, mmToClipperScale: mmToClipperScale });
+  }
+
+  // ---- Toolpath worker (returns camPaths polygons, not gcode) --------------
+
+  function runToolpathWorker(geometry, toolpath, mmToClipperScale, onDone) {
+    var basePath = window.location.href.replace(/\/[^/]*$/, '/');
+    var libBoot = [
+      'var window = self;',
+      'importScripts("' + basePath + 'vendors/clipper-lib.js");',
+      'importScripts("' + basePath + 'vendors/poly2tri.js");',
+      'var Module = { locateFile: function(p) { return "' + basePath + 'dependencies/cam-cpp/" + p; } };',
+      'importScripts("' + basePath + 'dependencies/cam-cpp/web-cam-cpp.js");',
+      'importScripts("' + basePath + 'js/lw5-mesh.js");',
+      'importScripts("' + basePath + 'js/lw5-cam.js");',
+      'self.__mesh__ = LW.mesh;',
+      'self.__cam__ = LW.cam;',
+    ].join('\n');
+
+    var workerCode = [
+      'self.onmessage = function(e) {',
+      '  var d = e.data;',
+      '  function run() {',
+      '    var mesh = self.__mesh__;',
+      '    var cam = self.__cam__;',
+      '    var tp = d.tp;',
+      '    var geometry = d.geometry;',
+      '    var mm = d.mmToClipperScale;',
+      '    var camPaths;',
+      '    try {',
+      '      var t = tp.type;',
+      '      if (t === "cut_on_line" || t === "engrave") {',
+      '        camPaths = cam.cut(geometry, [], false);',
+      '      } else if (t === "cut_outside" || t === "laser_cut_outside") {',
+      '        if (tp.margin) geometry = mesh.offset(geometry, tp.margin * mm);',
+      '        camPaths = cam.insideOutside(geometry, (tp.toolDiameter || 0.1) * mm, false, (tp.cutWidth || 0) * mm, tp.stepOver || 10, false, false);',
+      '      } else if (t === "cut_inside" || t === "laser_cut_inside") {',
+      '        if (tp.margin) geometry = mesh.offset(geometry, -tp.margin * mm);',
+      '        camPaths = cam.insideOutside(geometry, (tp.toolDiameter || 0.1) * mm, true, (tp.cutWidth || 0) * mm, tp.stepOver || 10, false, false);',
+      '      } else if (t === "pocket" || t === "laser_fill" || t === "laser_hatch") {',
+      '        camPaths = cam.fillPath(geometry, (tp.lineDistance || 0.1) * mm, tp.lineAngle || 0);',
+      '      } else if (t === "laser_crosshatch") {',
+      '        var ld = (tp.lineDistance || 0.1) * mm;',
+      '        camPaths = cam.fillPath(geometry, ld, tp.lineAngle || 0).concat(cam.fillPath(geometry, ld, tp.crossAngle || 90));',
+      '      } else if (t === "laser_spiral") {',
+      '        camPaths = cam.pocket(geometry, (tp.lineDistance || 0.1) * mm, tp.stepOver || 10, false);',
+      '      } else if (t === "laser_concentric") {',
+      '        camPaths = cam.insideOutside(geometry, (tp.lineDistance || 0.1) * mm, true, (tp.cutWidth || 0) * mm, tp.stepOver || 10, false, false);',
+      '      } else if (t === "laser_stipple") {',
+      '        camPaths = cam.fillPath(geometry, (tp.lineDistance || 0.1) * mm, tp.lineAngle || 0);',
+      '      } else if (t === "mill_pocket") {',
+      '        camPaths = cam.pocket(geometry, (tp.toolDiameter || 3) * mm, tp.stepOver || 10, (tp.direction || "Conventional") === "Climb");',
+      '      } else if (t === "mill_cut") {',
+      '        camPaths = cam.cut(geometry, [], (tp.direction || "Conventional") === "Climb");',
+      '      } else if (t === "mill_cut_outside") {',
+      '        if (tp.margin) geometry = mesh.offset(geometry, tp.margin * mm);',
+      '        camPaths = cam.insideOutside(geometry, (tp.toolDiameter || 3) * mm, false, (tp.cutWidth || 0) * mm, tp.stepOver || 10, (tp.direction || "Conventional") === "Climb", true);',
+      '      } else if (t === "mill_cut_inside") {',
+      '        if (tp.margin) geometry = mesh.offset(geometry, -tp.margin * mm);',
+      '        camPaths = cam.insideOutside(geometry, (tp.toolDiameter || 3) * mm, true, (tp.cutWidth || 0) * mm, tp.stepOver || 10, (tp.direction || "Conventional") === "Climb", true);',
+      '      } else if (t === "mill_vcarve") {',
+      '        camPaths = cam.vCarve ? cam.vCarve(geometry, tp.toolAngle || 45, tp.passDepth || 1) : [];',
+      '      } else if (t === "mill_hatch") {',
+      '        camPaths = cam.fillPath(geometry, (tp.lineDistance || 0.1) * mm, tp.lineAngle || 0);',
+      '      } else if (t === "mill_crosshatch") {',
+      '        var ld = (tp.lineDistance || 0.1) * mm;',
+      '        camPaths = cam.fillPath(geometry, ld, tp.lineAngle || 0).concat(cam.fillPath(geometry, ld, tp.crossAngle || 90));',
+      '      } else if (t === "mill_spiral") {',
+      '        camPaths = cam.pocket(geometry, (tp.toolDiameter || 3) * mm, tp.stepOver || 10, (tp.direction || "Conventional") === "Climb");',
+      '      } else if (t === "mill_concentric") {',
+      '        camPaths = cam.insideOutside(geometry, (tp.toolDiameter || 3) * mm, true, (tp.cutWidth || 0) * mm, tp.stepOver || 10, (tp.direction || "Conventional") === "Climb", true);',
+      '      } else if (t === "mill_stipple") {',
+      '        camPaths = cam.fillPath(geometry, (tp.lineDistance || 0.1) * mm, tp.lineAngle || 0);',
+      '      }',
+      '    } catch(e) {',
+      '      self.postMessage(JSON.stringify({ event: "onError", error: e.toString() }));',
+      '      return;',
+      '    }',
+      '    if (!camPaths || !camPaths.length) camPaths = [];',
+      '    self.postMessage(JSON.stringify({ event: "onDone", camPaths: camPaths }));',
+      '  }',
+      '  if (typeof Module !== "undefined" && typeof Module._separateTabs === "function") {',
+      '    run();',
+      '  } else if (typeof Module !== "undefined") {',
+      '    var _waitOrig = Module.onRuntimeInitialized;',
+      '    Module.onRuntimeInitialized = function() {',
+      '      if (_waitOrig) _waitOrig();',
+      '      run();',
+      '    };',
+      '  } else {',
+      '    setTimeout(run, 100);',
+      '  }',
+      '};'
+    ].join('\n');
+
+    showCalculateDialog();
+
+    var worker = new Worker(URL.createObjectURL(new Blob([libBoot + '\n' + workerCode])));
+    _calcWorker = worker;
+
+    worker.onmessage = function (e) {
+      var data = JSON.parse(e.data);
+      if (data.event === 'onDone') {
+        hideCalculateDialog();
+        if (typeof onDone === 'function') onDone(data.camPaths || []);
+      } else if (data.event === 'onError') {
+        hideCalculateDialog();
+        if (typeof onDone === 'function') onDone([]);
+      }
+    };
+
+    worker.postMessage({ tp: toolpath, geometry: geometry, mmToClipperScale: mmToClipperScale });
+  }
+
+  function unionDocsGeometry(docIds, transform2d) {
+    if (!docIds || docIds.length < 2 || !LW.mesh || !LW.getState) return null;
+    var allDocs = LW.getState().documents;
+    var geometries = [];
+    for (var i = 0; i < docIds.length; i++) {
+      var d = allDocs.filter(function (x) { return x.id === docIds[i]; })[0];
+      if (!d || !d.rawPaths || !d.rawPaths.length) continue;
+      if (d.type === 'image' || (d.dataURL && d.dataURL.indexOf('data:image/') === 0)) continue;
+      var g = LW.mesh.rawPathsToClipperPaths(d.rawPaths, transform2d);
+      if (g && g.length) geometries.push(g);
+    }
+    if (geometries.length < 2) return geometries.length === 1 ? geometries[0] : null;
+    var combined = LW.mesh.union(geometries[0], geometries[1]);
+    for (var i = 2; i < geometries.length; i++) {
+      combined = LW.mesh.union(combined, geometries[i]);
+    }
+    return combined;
+  }
+
+  function previewAllToolpaths(retries) {
+    if (retries === undefined) retries = 0;
+    if (!LW.mesh || !LW.cam) return;
+    if (retries > 50) return;
+    if (typeof Module === 'undefined' || typeof Module._separateTabs !== 'function') {
+      setTimeout(function () { previewAllToolpaths(retries + 1); }, 100);
+      return;
+    }
+    var docs = LW.getState().documents;
+    var allGcode = [];
+    for (var i = 0; i < docs.length; i++) {
+      var doc = docs[i];
+      var tp = doc.toolpath;
+      if (!tp || tp.type === 'none') continue;
+      if (tp.type === 'raster' || tp.type === 'raster_merge' || tp.type === 'mill_vcarve' || tp.type === 'mill_halftone' || tp.type === 'mill_wavy_raster' || tp.type === 'mill_heightmap') continue;
+      if (!doc.rawPaths || !doc.rawPaths.length) continue;
+      var g = generatePreviewGcode(doc);
+      if (g) allGcode.push(g);
+    }
+    if (!allGcode.length) return;
+    LW.dispatch({ type: 'GCODE_UPDATE', payload: { content: allGcode.join('\n'), dirty: true, gcoding: { enable: false, percent: 100 } } });
+  }
+
+  function fallbackFullGenerate(doc) {
+    if (typeof window.toolpathToOperation !== 'function' || !LW.gcode || !LW.gcode.getGcode) return;
+    var op = window.toolpathToOperation(doc);
+    if (!op) return;
+    var state = LW.getState();
+    LW.gcode.getGcode(state.settings, state.documents, [op], null,
+      function () {},
+      function (gcode) {
+        LW.dispatch({ type: 'GCODE_UPDATE', payload: { content: gcode, dirty: true, gcoding: { enable: false, percent: 100 } } });
+      },
+      function () {}
+    );
+  }
+
+  function showToolpathPopup(doc, canvasPos, selectedIds, isToolpath) {
     $('#lw5-toolpath-popup').remove();
 
     if (!doc) return;
-    var tp = doc.toolpath || { type: 'none', power: 0, speed: 0, passes: 0, margin: 0, segmentLength: 1, trimLine: false, dpi: 250, direction: 'top_to_bottom', brightness: 0, contrast: 0, gamma: 1, grayscale: false, dithering: 'none' };
 
-    var types = ['none', 'engrave', 'cut_on_line', 'cut_outside', 'cut_inside', 'laser_fill', 'laser_cut_inside', 'laser_cut_outside', 'mill_pocket', 'mill_cut', 'mill_cut_inside', 'mill_cut_outside', 'mill_vcarve', 'raster', 'raster_merge'];
+    var toolpathObj = isToolpath ? doc : null;
+    var actualDoc = isToolpath ? null : doc;
+
+    var combineIds, combineCount;
+    if (toolpathObj) {
+      var docs = LW.getDocuments();
+      var entityIds = toolpathObj.entityIds || [];
+      combineIds = entityIds.length > 1 ? entityIds : null;
+      combineCount = entityIds.length;
+    } else {
+      combineIds = selectedIds && selectedIds.length > 1 ? selectedIds : null;
+      combineCount = combineIds ? combineIds.length : 1;
+    }
+
+    var tp = toolpathObj ? (toolpathObj.toolpath || {}) : (actualDoc.toolpath || {});
+    tp = Object.assign({ type: 'none', power: 0, speed: 0, passes: 0, margin: 0, segmentLength: 1, trimLine: false, dpi: 250, direction: 'top_to_bottom', brightness: 0, contrast: 0, gamma: 1, grayscale: false, dithering: 'none' }, tp);
+
+    var allTypes = ['none', 'engrave', 'cut_on_line', 'cut_outside', 'cut_inside', 'laser_fill', 'laser_cut_inside', 'laser_cut_outside', 'laser_hatch', 'laser_crosshatch', 'laser_spiral', 'laser_concentric', 'laser_stipple', 'mill_pocket', 'mill_cut', 'mill_cut_inside', 'mill_cut_outside', 'mill_vcarve', 'mill_hatch', 'mill_crosshatch', 'mill_spiral', 'mill_concentric', 'mill_stipple', 'raster', 'raster_merge', 'mill_halftone', 'mill_wavy_raster', 'mill_heightmap'];
+    var vectorTypes = ['none', 'engrave', 'cut_on_line', 'cut_outside', 'cut_inside', 'laser_fill', 'laser_cut_inside', 'laser_cut_outside', 'laser_hatch', 'laser_crosshatch', 'laser_spiral', 'laser_concentric', 'laser_stipple', 'mill_pocket', 'mill_cut', 'mill_cut_inside', 'mill_cut_outside', 'mill_vcarve', 'mill_hatch', 'mill_crosshatch', 'mill_spiral', 'mill_concentric', 'mill_stipple'];
+    var bitmapTypes = ['raster', 'raster_merge', 'mill_halftone', 'mill_wavy_raster', 'mill_heightmap'];
+    var isBitmapDoc = actualDoc && (actualDoc.type === 'image' || (actualDoc.dataURL && actualDoc.dataURL.indexOf('data:image/') === 0));
+    var types = isBitmapDoc ? bitmapTypes : vectorTypes;
     var typeOptions = types.map(function (t) {
       return '<option value="' + t + '"' + (tp.type === t ? ' selected' : '') + '>' + t.replace(/_/g, ' ') + '</option>';
     }).join('');
 
-    var docType = doc.type === 'image' ? 'Bitmap' : 'Vector';
-    var subtitle = '1 ' + docType;
-    var isRaster = tp.type === 'raster' || tp.type === 'raster_merge';
+    var subtitle = toolpathObj ? toolpathObj.name + ' (' + combineCount + ' shapes)' : (combineCount > 1 ? combineCount + ' vectors selected' : '1 Vector');
+    var isRaster = tp.type === 'raster' || tp.type === 'raster_merge' || tp.type === 'mill_halftone' || tp.type === 'mill_wavy_raster' || tp.type === 'mill_heightmap';
     var isMill = tp.type.indexOf('mill_') === 0;
+    var isBitmapMill = tp.type === 'mill_halftone' || tp.type === 'mill_wavy_raster' || tp.type === 'mill_heightmap';
     var isVcarve = tp.type === 'mill_vcarve';
+    var isFill = tp.type === 'laser_fill' || tp.type === 'laser_hatch' || tp.type === 'laser_crosshatch' || tp.type === 'laser_spiral' || tp.type === 'laser_concentric' || tp.type === 'laser_stipple' || tp.type === 'mill_pocket' || tp.type === 'mill_hatch' || tp.type === 'mill_crosshatch' || tp.type === 'mill_spiral' || tp.type === 'mill_concentric' || tp.type === 'mill_stipple';
+    var isCrossHatch = tp.type === 'laser_crosshatch' || tp.type === 'mill_crosshatch';
 
     var html =
       '<div class="lw5-modal-overlay" id="lw5-toolpath-popup">' +
@@ -1367,12 +2024,40 @@
                   '<input type="number" id="lw5-pp-passes" value="' + tp.passes + '" min="1" max="99" class="lw5-dialog-num" />' +
                 '</div>' +
               '</div>' +
+              '<div class="lw5-dialog-section">' +
+                '<div class="lw5-dialog-section-title">Tool</div>' +
+                '<div class="lw5-dialog-row">' +
+                  '<label>Tool Dia</label>' +
+                  '<input type="number" id="lw5-pp-toolDia" value="' + (tp.toolDiameter || 0.5) + '" step="0.01" class="lw5-dialog-num" style="width:70px" /><span style="font-size:10px;color:var(--text-muted);margin-left:4px">mm</span>' +
+                '</div>' +
+                '<div class="lw5-dialog-row">' +
+                  '<label>Segment Len</label>' +
+                  '<input type="number" id="lw5-pp-seg" value="' + tp.segmentLength + '" step="0.5" class="lw5-dialog-num" style="width:70px" /><span style="font-size:10px;color:var(--text-muted);margin-left:4px">mm  (point spacing)</span>' +
+                '</div>' +
+              '</div>' +
+              '<div class="lw5-dialog-section lw5-pp-fill" style="' + (isFill ? '' : 'display:none') + '">' +
+                '<div class="lw5-dialog-section-title">Fill Pattern</div>' +
+                '<div class="lw5-dialog-row">' +
+                  '<label>Line Spacing</label>' +
+                  '<input type="number" id="lw5-pp-lineDist" value="' + (tp.lineDistance || 0.1) + '" step="0.01" class="lw5-dialog-num" style="width:70px" /><span style="font-size:10px;color:var(--text-muted);margin-left:4px">mm  (gap between passes)</span>' +
+                '</div>' +
+                '<div class="lw5-dialog-row">' +
+                  '<label>Fill Angle</label>' +
+                  '<input type="number" id="lw5-pp-lineAngle" value="' + (tp.lineAngle || 0) + '" step="1" class="lw5-dialog-num" style="width:70px" /><span style="font-size:10px;color:var(--text-muted);margin-left:4px">deg  (0=horizontal, 90=vertical)</span>' +
+                '</div>' +
+                '<div class="lw5-dialog-row lw5-pp-crosshatch" style="' + (isCrossHatch ? '' : 'display:none') + '">' +
+                  '<label>Cross Hatch</label>' +
+                  '<input type="number" id="lw5-pp-crossAngle" value="' + (tp.crossAngle || 90) + '" step="1" class="lw5-dialog-num" style="width:70px" /><span style="font-size:10px;color:var(--text-muted);margin-left:4px">deg  (2nd pass angle)</span>' +
+                '</div>' +
+              '</div>' +
               '<div class="lw5-dialog-section lw5-pp-depth" style="' + (isMill ? '' : 'display:none') + '">' +
-                '<div class="lw5-dialog-section-title">Depth</div>' +
-                '<div class="lw5-dialog-row"><label>Pass Depth</label><input type="number" id="lw5-pp-passDepth" value="' + (tp.passDepth || 1) + '" step="0.1" class="lw5-dialog-num" style="width:80px" /></div>' +
-                '<div class="lw5-dialog-row"><label>Start Z</label><input type="number" id="lw5-pp-millStartZ" value="' + (tp.millStartZ || 0) + '" step="0.1" class="lw5-dialog-num" style="width:80px" /></div>' +
-                '<div class="lw5-dialog-row"><label>End Z</label><input type="number" id="lw5-pp-millEndZ" value="' + (tp.millEndZ || -1) + '" step="0.1" class="lw5-dialog-num" style="width:80px" /></div>' +
-                '<div class="lw5-dialog-row lw5-pp-vcarve" style="' + (isVcarve ? '' : 'display:none') + '"><label>Tool Angle</label><input type="number" id="lw5-pp-toolAngle" value="' + (tp.toolAngle || 90) + '" class="lw5-dialog-num" style="width:80px" /></div>' +
+                '<div class="lw5-dialog-section-title">Depth &amp; Step</div>' +
+                '<div class="lw5-dialog-row"><label>Pass Depth</label><input type="number" id="lw5-pp-passDepth" value="' + (tp.passDepth || 1) + '" step="0.1" class="lw5-dialog-num" style="width:70px" /><span style="font-size:10px;color:var(--text-muted);margin-left:4px">mm</span></div>' +
+                '<div class="lw5-dialog-row"><label>Start Z</label><input type="number" id="lw5-pp-millStartZ" value="' + (tp.millStartZ || 0) + '" step="0.1" class="lw5-dialog-num" style="width:70px" /><span style="font-size:10px;color:var(--text-muted);margin-left:4px">mm</span></div>' +
+                '<div class="lw5-dialog-row"><label>End Z</label><input type="number" id="lw5-pp-millEndZ" value="' + (tp.millEndZ || -1) + '" step="0.1" class="lw5-dialog-num" style="width:70px" /><span style="font-size:10px;color:var(--text-muted);margin-left:4px">mm</span></div>' +
+                '<div class="lw5-dialog-row"><label>Step Over</label><input type="number" id="lw5-pp-stepOver" value="' + (tp.stepOver || 10) + '" class="lw5-dialog-num" style="width:70px" /><span style="font-size:10px;color:var(--text-muted);margin-left:4px">% of tool dia</span></div>' +
+                '<div class="lw5-dialog-row"><label>Direction</label><select id="lw5-pp-millDir"><option value="Conventional"' + ((tp.direction || 'Conventional') === 'Conventional' ? ' selected' : '') + '>Conventional</option><option value="Climb"' + (tp.direction === 'Climb' ? ' selected' : '') + '>Climb</option></select></div>' +
+                '<div class="lw5-dialog-row lw5-pp-vcarve" style="' + (isVcarve ? '' : 'display:none') + '"><label>Tool Angle</label><input type="number" id="lw5-pp-toolAngle" value="' + (tp.toolAngle || 90) + '" class="lw5-dialog-num" style="width:70px" /><span style="font-size:10px;color:var(--text-muted);margin-left:4px">deg</span></div>' +
               '</div>' +
               '<div style="margin-top:4px">' +
                 '<button class="lw5-btn lw5-btn-xs" id="lw5-pp-advanced-toggle" style="width:100%"><i class="fas fa-cog"></i> Advanced</button>' +
@@ -1380,8 +2065,6 @@
                   '<div class="lw5-dialog-section">' +
                     '<div class="lw5-dialog-section-title">Common</div>' +
                     '<div class="lw5-dialog-row"><label>Margin</label><input type="number" id="lw5-pp-margin" value="' + tp.margin + '" step="0.01" class="lw5-dialog-num" style="width:80px" /></div>' +
-                    '<div class="lw5-dialog-row"><label>Tool Dia</label><input type="number" id="lw5-pp-toolDia" value="' + (tp.toolDiameter || 0.5) + '" step="0.01" class="lw5-dialog-num" style="width:80px" /></div>' +
-                    '<div class="lw5-dialog-row"><label>Segment Len</label><input type="number" id="lw5-pp-seg" value="' + tp.segmentLength + '" step="0.5" class="lw5-dialog-num" style="width:80px" /></div>' +
                     '<div class="lw5-dialog-row"><label class="lw5-dialog-check"><input type="checkbox" id="lw5-pp-trim" ' + (tp.trimLine ? 'checked' : '') + ' /> Trim Line</label></div>' +
                   '</div>' +
                    '<div class="lw5-dialog-section lw5-pp-raster" style="' + (isRaster ? '' : 'display:none') + '">' +
@@ -1399,15 +2082,16 @@
                   '</div>' +
                   '<div class="lw5-dialog-section lw5-pp-mill" style="' + (isMill ? '' : 'display:none') + '">' +
                     '<div class="lw5-dialog-section-title">Tool</div>' +
-                    '<div class="lw5-dialog-row"><label>Step Over</label><input type="number" id="lw5-pp-stepOver" value="' + (tp.stepOver || 10) + '" class="lw5-dialog-num" style="width:80px" /><span style="font-size:11px;color:var(--text-muted)">%</span></div>' +
                     '<div class="lw5-dialog-row"><label>Plunge</label><input type="number" id="lw5-pp-plungeRate" value="' + (tp.plungeRate || 300) + '" class="lw5-dialog-num" style="width:80px" /></div>' +
                     '<div class="lw5-dialog-row"><label>Rapid Z</label><input type="number" id="lw5-pp-millRapidZ" value="' + (tp.millRapidZ || 10) + '" class="lw5-dialog-num" style="width:80px" /></div>' +
-                    '<div class="lw5-dialog-row"><label>Direction</label><select id="lw5-pp-millDir"><option value="Conventional"' + ((tp.direction || 'Conventional') === 'Conventional' ? ' selected' : '') + '>Conventional</option><option value="Climb"' + (tp.direction === 'Climb' ? ' selected' : '') + '>Climb</option></select></div>' +
                     '<div class="lw5-dialog-row"><label class="lw5-dialog-check"><input type="checkbox" id="lw5-pp-ramp" ' + (tp.ramp ? 'checked' : '') + ' /> Ramp</label></div>' +
                   '</div>' +
                 '</div>' +
               '</div>' +
             '</div>' +
+          (combineCount > 1
+            ? '<div class="lw5-dialog-section"><div class="lw5-dialog-row"><label class="lw5-dialog-check"><input type="checkbox" id="lw5-pp-combine" checked /> Combine ' + combineCount + ' vectors (Clipper union)</label></div></div>'
+            : '') +
           '</div>' +
           '<div class="lw5-dialog-footer">' +
             '<div class="lw5-dialog-footer-left">' +
@@ -1432,6 +2116,9 @@
         margin: parseFloat($('#lw5-pp-margin').val()) || 0,
         segmentLength: parseFloat($('#lw5-pp-seg').val()) || 1,
         trimLine: $('#lw5-pp-trim').is(':checked'),
+        lineDistance: parseFloat($('#lw5-pp-lineDist').val()) || 0.1,
+        lineAngle: parseFloat($('#lw5-pp-lineAngle').val()) || 0,
+        crossAngle: parseFloat($('#lw5-pp-crossAngle').val()) || 90,
         dpi: parseInt($('#lw5-pp-dpi').val()) || 250,
         direction: $('#lw5-pp-dir').val() || 'top_to_bottom',
         laserPowerRange: parseInt($('#lw5-pp-powerRange').val()) || 100,
@@ -1456,21 +2143,23 @@
       };
       var $millDir = $('#lw5-pp-millDir');
       if ($millDir.length) newTp.direction = $millDir.val();
-      LW.dispatch({ type: 'DOCUMENT_UPDATE', payload: { id: doc.id, changes: { toolpath: newTp } } });
+      if (toolpathObj) {
+        LW.dispatch({ type: 'TOOLPATH_UPDATE', payload: { id: toolpathObj.id, changes: { toolpath: newTp, computed: null } } });
+      } else if (actualDoc) {
+        LW.dispatch({ type: 'DOCUMENT_UPDATE', payload: { id: actualDoc.id, changes: { toolpath: newTp } } });
+      }
       if (typeof LW.saveLastToolpath === 'function') LW.saveLastToolpath(newTp);
-      // Trigger image filter preview
-      if (doc.type === 'image' && (newTp.type === 'raster' || newTp.type === 'raster_merge')) {
-        applyImageFilters(doc.dataURL, newTp, function (filteredUrl) {
+      // Trigger image filter preview (doc mode only)
+      if (actualDoc && actualDoc.type === 'image' && (newTp.type === 'raster' || newTp.type === 'raster_merge')) {
+        applyImageFilters(actualDoc.dataURL, newTp, function (filteredUrl) {
           if (filteredUrl) {
-            doc._filteredDataURL = filteredUrl;
-          } else {
-            delete doc._filteredDataURL;
+            actualDoc._filteredDataURL = filteredUrl;
           }
           // Force canvas redraw
           LW.draw.updateDocuments(LW.getState().documents);
         });
-      } else if (doc.type === 'image') {
-        delete doc._filteredDataURL;
+      } else if (actualDoc && actualDoc.type === 'image') {
+        delete actualDoc._filteredDataURL;
       }
     }
 
@@ -1480,12 +2169,16 @@
     $('#lw5-pp-type').on('change', function () {
       var v = $(this).val();
       var isMill = v.indexOf('mill_') === 0;
-      var isRaster = v === 'raster' || v === 'raster_merge';
+      var isRaster = v === 'raster' || v === 'raster_merge' || v === 'mill_halftone' || v === 'mill_wavy_raster' || v === 'mill_heightmap';
       var isVcarve = v === 'mill_vcarve';
+      var isFill = v === 'laser_fill' || v === 'laser_hatch' || v === 'laser_crosshatch' || v === 'laser_spiral' || v === 'laser_concentric' || v === 'laser_stipple' || v === 'mill_pocket' || v === 'mill_hatch' || v === 'mill_crosshatch' || v === 'mill_spiral' || v === 'mill_concentric' || v === 'mill_stipple';
+      var isCrossHatch = v === 'laser_crosshatch' || v === 'mill_crosshatch';
       $('.lw5-pp-depth').toggle(isMill);
       $('.lw5-pp-vcarve').toggle(isVcarve);
       $('.lw5-pp-mill').toggle(isMill);
       $('.lw5-pp-raster').toggle(isRaster);
+      $('.lw5-pp-fill').toggle(isFill);
+      $('.lw5-pp-crosshatch').toggle(isCrossHatch);
       updateDoc();
     });
     $('#lw5-pp-passes, #lw5-pp-margin, #lw5-pp-seg, #lw5-pp-dpi').on('change', updateDoc);
@@ -1493,6 +2186,7 @@
     $('#lw5-pp-dir, #lw5-pp-dither, #lw5-pp-powerRange, #lw5-pp-overscan').on('change', updateDoc);
     $('#lw5-pp-brightness, #lw5-pp-contrast, #lw5-pp-gamma').on('input', updateDoc);
     $('#lw5-pp-toolDia, #lw5-pp-stepOver, #lw5-pp-plungeRate, #lw5-pp-passDepth').on('change', updateDoc);
+    $('#lw5-pp-lineDist, #lw5-pp-lineAngle, #lw5-pp-crossAngle').on('change', updateDoc);
     $('#lw5-pp-millRapidZ, #lw5-pp-millStartZ, #lw5-pp-millEndZ, #lw5-pp-millDir').on('change', updateDoc);
     $('#lw5-pp-toolAngle').on('change', updateDoc);
     $('#lw5-pp-ramp').on('change', updateDoc);
@@ -1510,21 +2204,90 @@
     $('#lw5-pp-cancel').on('click', function () { $popup.remove(); });
     $popup.on('click', function (e) { if (e.target === this) $popup.remove(); });
 
-    // Apply button: save current values, set stroke color, close
+    // Apply button: save settings, compute toolpath via worker, store result, close
     $('#lw5-pp-apply').on('click', function () {
       updateDoc();
-      var typeColors = {
-        none: '#999999',
-        cut_on_line: '#e81123', cut_outside: '#0078d4', cut_inside: '#ffb900',
-        laser_fill: '#107c10', laser_cut_inside: '#ffb900', laser_cut_outside: '#0078d4',
-        pocket: '#107c10', raster: '#881798', raster_merge: '#cc33cc',
-        engrave: '#666666',
-        mill_pocket: '#8b4513', mill_cut: '#d2691e', mill_cut_inside: '#d2691e', mill_cut_outside: '#d2691e',
-        mill_vcarve: '#a0522d'
-      };
       var tpType = $('#lw5-pp-type').val();
-      var color = typeColors[tpType] || '#666666';
-      LW.dispatch({ type: 'DOCUMENT_UPDATE', payload: { id: doc.id, changes: { strokeColor: color } } });
+
+      if (toolpathObj) {
+        // === Toolpath mode: dispatch worker, store computed cam paths ===
+        var docs = LW.getDocuments();
+        var entityIds = toolpathObj.entityIds || [];
+        var geometries = [];
+        for (var ei = 0; ei < entityIds.length; ei++) {
+          var d = docs.filter(function (x) { return x.id === entityIds[ei]; })[0];
+          if (d && d.rawPaths && d.rawPaths.length && d.type !== 'image') {
+            var g = LW.mesh.rawPathsToClipperPaths(d.rawPaths, d.transform2d);
+            if (g && g.length) geometries.push(g);
+          }
+        }
+        if (geometries.length) {
+          var doCombine = $('#lw5-pp-combine').length === 0 || $('#lw5-pp-combine').is(':checked');
+          var combinedGeometry;
+          if (doCombine && geometries.length > 1) {
+            combinedGeometry = LW.mesh.xor(geometries[0], geometries[1]);
+            for (var gi = 2; gi < geometries.length; gi++) {
+              combinedGeometry = LW.mesh.xor(combinedGeometry, geometries[gi]);
+            }
+          } else {
+            combinedGeometry = geometries[0] || [];
+            for (var gi = 1; gi < geometries.length; gi++) {
+              combinedGeometry = combinedGeometry.concat(geometries[gi]);
+            }
+          }
+          var mmToClipperScale = LW.mesh.mmToClipperScale || 50000000;
+          var tpForWorker = {
+            type: tpType,
+            margin: parseFloat($('#lw5-pp-margin').val()) || 0,
+            lineDistance: parseFloat($('#lw5-pp-lineDist').val()) || 0.1,
+            lineAngle: parseFloat($('#lw5-pp-lineAngle').val()) || 0,
+            crossAngle: parseFloat($('#lw5-pp-crossAngle').val()) || 90,
+            stepOver: parseFloat($('#lw5-pp-stepOver').val()) || 10,
+            cutWidth: parseFloat($('#lw5-pp-cutWidth').val()) || 0,
+            toolDiameter: parseFloat($('#lw5-pp-toolDia').val()) || 3,
+            direction: ($('#lw5-pp-millDir').length ? $('#lw5-pp-millDir').val() : 'Conventional'),
+            toolAngle: parseFloat($('#lw5-pp-toolAngle').val()) || 90,
+            passDepth: parseFloat($('#lw5-pp-passDepth').val()) || 1
+          };
+          // Set computing flag
+          LW.dispatch({ type: 'TOOLPATH_UPDATE', payload: { id: toolpathObj.id, changes: { computed: { busy: true } } } });
+          renderToolpathPanel();
+          runToolpathWorker(combinedGeometry, tpForWorker, mmToClipperScale, function (camPaths) {
+            LW.dispatch({ type: 'TOOLPATH_UPDATE', payload: { id: toolpathObj.id, changes: { computed: { camPaths: camPaths, type: tpType, time: Date.now() } } } });
+            renderToolpathPanel();
+            // Generate preview gcode from computed cam paths for overlay
+            if (camPaths && camPaths.length) {
+              var scale = 1 / mmToClipperScale;
+              var lines = [];
+              for (var pi = 0; pi < camPaths.length; pi++) {
+                var pp = camPaths[pi].path;
+                if (!pp || !pp.length) continue;
+                lines.push('G0 X' + (pp[0].X * scale).toFixed(3) + ' Y' + (pp[0].Y * scale).toFixed(3));
+                for (var pj = 1; pj < pp.length; pj++) {
+                  lines.push('G1 X' + (pp[pj].X * scale).toFixed(3) + ' Y' + (pp[pj].Y * scale).toFixed(3));
+                }
+              }
+              LW.dispatch({ type: 'GCODE_UPDATE', payload: { content: lines.join('\n'), dirty: true, gcoding: { enable: false, percent: 100 } } });
+            }
+          });
+        }
+      } else if (actualDoc) {
+        // === Document mode: existing behavior ===
+        var typeColors = {
+          none: '#999999',
+          cut_on_line: '#e81123', cut_outside: '#0078d4', cut_inside: '#ffb900',
+          laser_fill: '#107c10', laser_cut_inside: '#ffb900', laser_cut_outside: '#0078d4',
+          laser_hatch: '#2e8b57', laser_crosshatch: '#3cb371', laser_spiral: '#20b2aa', laser_concentric: '#48d1cc', laser_stipple: '#66cdaa',
+          pocket: '#107c10', raster: '#881798', raster_merge: '#cc33cc',
+          engrave: '#666666',
+          mill_pocket: '#8b4513', mill_cut: '#d2691e', mill_cut_inside: '#d2691e', mill_cut_outside: '#d2691e',
+          mill_vcarve: '#a0522d', mill_hatch: '#cd853f', mill_crosshatch: '#daa520', mill_spiral: '#b8860b', mill_concentric: '#bc8f8f', mill_stipple: '#deb887',
+          mill_halftone: '#9932cc', mill_wavy_raster: '#8b008b', mill_heightmap: '#9400d3'
+        };
+        var color = typeColors[tpType] || '#666666';
+        LW.dispatch({ type: 'DOCUMENT_UPDATE', payload: { id: actualDoc.id, changes: { strokeColor: color } } });
+        previewAllToolpaths();
+      }
       $popup.remove();
     });
 
@@ -1535,6 +2298,7 @@
 
   // Expose these globally
   window.showFileList = showFileList;
+  window.previewAllToolpaths = previewAllToolpaths;
   window.showToolpathPopup = showToolpathPopup;
   window.showTransformBar = showTransformBar;
   window.showMaterialEditor = showMaterialEditor;
@@ -1593,10 +2357,15 @@
       }
       return pts;
     }
+    // DXF uses Y-up, canvas uses Y-down — negate Y to match canvas
+    function negateY(arr) {
+      for (var i = 1; i < arr.length; i += 2) arr[i] = -arr[i];
+      return arr;
+    }
     switch (entity.type) {
       case 'LINE':
         if (entity.vertices && entity.vertices.length >= 2) {
-          paths.push([entity.vertices[0].x, entity.vertices[0].y, entity.vertices[1].x, entity.vertices[1].y]);
+          paths.push(negateY([entity.vertices[0].x, entity.vertices[0].y, entity.vertices[1].x, entity.vertices[1].y]));
         }
         break;
       case 'LWPOLYLINE':
@@ -1607,19 +2376,19 @@
             pts.push(entity.vertices[i].x, entity.vertices[i].y);
           }
           if (entity.closed) pts.push(entity.vertices[0].x, entity.vertices[0].y);
-          paths.push(pts);
+          paths.push(negateY(pts));
         }
         break;
       case 'CIRCLE':
         if (entity.center && entity.radius) {
-          paths.push(approxCircle(entity.center.x, entity.center.y, entity.radius));
+          paths.push(negateY(approxCircle(entity.center.x, entity.center.y, entity.radius)));
         }
         break;
       case 'ARC':
         if (entity.center && entity.radius) {
           var sa = (entity.startAngle || 0) * Math.PI / 180;
           var ea = (entity.endAngle || 360) * Math.PI / 180;
-          paths.push(approxArc(entity.center.x, entity.center.y, entity.radius, sa, ea));
+          paths.push(negateY(approxArc(entity.center.x, entity.center.y, entity.radius, sa, ea)));
         }
         break;
       case 'ELLIPSE':
@@ -1638,12 +2407,12 @@
             var ey = entity.center.y + rx * cosA * Math.sin(angle) + ry * sinA * Math.cos(angle);
             pts.push(ex, ey);
           }
-          paths.push(pts);
+          paths.push(negateY(pts));
         }
         break;
       case 'POINT':
         if (entity.position) {
-          paths.push([entity.position.x, entity.position.y]);
+          paths.push(negateY([entity.position.x, entity.position.y]));
         }
         break;
     }
@@ -1696,21 +2465,24 @@
   }
 
   function showTransformBar(selectedIds) {
+    var $bar = $('#lw5-transform-bar');
     if (!selectedIds || selectedIds.length === 0) {
-      $('#lw5-transform-bar').hide();
+      $bar.css('opacity', 0.35);
+      $('#tf-x, #tf-y, #tf-w, #tf-h, #tf-rot').val('').prop('disabled', true);
+      $('#tf-lock').removeClass('active');
       return;
     }
     var docs = LW.getState().documents;
+    $bar.css('opacity', 1);
     if (selectedIds.length === 1) {
       var doc = docs.filter(function (d) { return d.id === selectedIds[0]; })[0];
-      if (!doc) { $('#lw5-transform-bar').hide(); return; }
+      if (!doc) { $bar.css('opacity', 0.35); $('#tf-x, #tf-y, #tf-w, #tf-h, #tf-rot').val('').prop('disabled', true); return; }
       var tf = doc.transform2d || [1, 0, 0, 1, 0, 0];
       var ext = extractTransform(tf);
       var b = getDocLocalBounds(doc);
-      if (!b) { $('#lw5-transform-bar').hide(); return; }
+      if (!b) { $bar.css('opacity', 0.35); $('#tf-x, #tf-y, #tf-w, #tf-h, #tf-rot').val('').prop('disabled', true); return; }
       var bw = b.x2 - b.x1, bh = b.y2 - b.y1;
       var w = bw * ext.sx, h = bh * ext.sy;
-      $('#lw5-transform-bar').show();
       $('#tf-x').val(ext.x.toFixed(1)).prop('disabled', false);
       $('#tf-y').val(ext.y.toFixed(1)).prop('disabled', false);
       $('#tf-w').val(w.toFixed(1)).prop('disabled', false);
@@ -1733,8 +2505,8 @@
         if (b.x2 > gb.x2) gb.x2 = b.x2;
         if (b.y2 > gb.y2) gb.y2 = b.y2;
       });
-      if (!ok) { $('#lw5-transform-bar').hide(); return; }
-      $('#lw5-transform-bar').show();
+      if (!ok) { $('#lw5-transform-bar').css('opacity', 0.35); $('#tf-x, #tf-y, #tf-w, #tf-h, #tf-rot').val('').prop('disabled', true); return; }
+      $('#lw5-transform-bar').css('opacity', 1);
       $('#tf-x').val(((gb.x1 + gb.x2) / 2).toFixed(1)).prop('disabled', false);
       $('#tf-y').val(((gb.y1 + gb.y2) / 2).toFixed(1)).prop('disabled', false);
       $('#tf-w').val((gb.x2 - gb.x1).toFixed(1)).prop('disabled', false);

@@ -207,6 +207,7 @@
 
   LW.State = {
     documents: pDocuments,
+    toolpaths: [],
     operations: [],
     currentOperation: null,
     settings: Object.assign({}, defaultSettings, pSettings),
@@ -316,6 +317,32 @@
         LW.State.documents.forEach(function (d) { if (d.selected) IDB.remove(d.id); });
         LW.State.documents = LW.State.documents.filter(function (d) { return !d.selected; });
         savePersisted();
+        break;
+
+      // --- Toolpaths ---
+      case 'TOOLPATH_ADD':
+        if (payload) { payload.order = LW.State.toolpaths.length; LW.State.toolpaths.push(payload); }
+        break;
+
+      case 'TOOLPATH_REMOVE':
+        LW.State.toolpaths = LW.State.toolpaths.filter(function (t) { return t.id !== payload; });
+        break;
+
+      case 'TOOLPATH_UPDATE':
+        {
+          var tIdx = LW.State.toolpaths.findIndex(function (t) { return t.id === payload.id; });
+          if (tIdx !== -1) Object.assign(LW.State.toolpaths[tIdx], payload.changes);
+        }
+        break;
+
+      case 'TOOLPATH_REORDER':
+        if (Array.isArray(payload)) {
+          payload.forEach(function (id, i) {
+            var t = LW.State.toolpaths.find(function (tp) { return tp.id === id; });
+            if (t) t.order = i;
+          });
+          LW.State.toolpaths.sort(function (a, b) { return a.order - b.order; });
+        }
         break;
 
       // --- Operations ---
@@ -566,6 +593,21 @@
   LW.getSettings = function () { return LW.State.settings; };
   LW.getDocuments = function () { return LW.State.documents; };
   LW.getOperations = function () { return LW.State.operations; };
+  LW.getToolpaths = function () { return LW.State.toolpaths; };
+
+  LW.createToolpath = function (entityIds) {
+    var tp = LW.defaultToolpath('none');
+    return {
+      id: 'tp_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
+      name: 'Toolpath ' + (LW.State.toolpaths.length + 1),
+      entityIds: entityIds || [],
+      visible: true,
+      enabled: true,
+      order: LW.State.toolpaths.length,
+      toolpath: tp,
+      computed: null
+    };
+  };
 
   // ---- Color Detection for Toolpath Types ----------------------------------
 

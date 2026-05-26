@@ -86,12 +86,21 @@
         </div>
       </nav>
 
+      <!-- Toolpath Panel -->
+      <div id="lw5-tp-panel" class="lw5-tp-panel" style="display:none">
+        <div class="lw5-tp-header">
+          <span>Toolpaths</span>
+          <button class="lw5-tp-btn lw5-tp-btn-primary" id="lw5-tp-add" title="Add toolpath from selected vectors"><i class="fas fa-plus"></i> Add</button>
+        </div>
+        <div class="lw5-tp-list" id="lw5-tp-list"></div>
+      </div>
+
       <!-- Workspace (Design 2D / GCode 3D) -->
       <div id="lw5-workspace" class="lw5-workspace">
         <div class="lw5-workspace-tabs">
           <button class="lw5-wtab active" data-view="design"><i class="fas fa-pencil-ruler"></i> Design</button>
         </div>
-        <div id="lw5-transform-bar" class="lw5-transform-bar" style="display:none">
+        <div id="lw5-transform-bar" class="lw5-transform-bar" style="opacity:0.35">
           <div class="lw5-tf-group"><label>X</label><input type="number" id="tf-x" step="0.1" /></div>
           <div class="lw5-tf-group"><label>Y</label><input type="number" id="tf-y" step="0.1" /></div>
           <div class="lw5-tf-group"><label>W</label><input type="number" id="tf-w" step="0.1" /></div>
@@ -153,6 +162,9 @@
   <script src="js/lw5-cam.js"></script>
   <script src="js/lw5-raster.js"></script>
   <script src="js/lw5-cam-gcode.js"></script>
+  <script src="js/lw5-mill-halftone.js"></script>
+  <script src="js/lw5-mill-wavy.js"></script>
+  <script src="js/lw5-mill-heightmap.js"></script>
   <script src="js/lw5-gcode-overlay.js"></script>
   <script src="js/lw5-draw.js"></script>
   <script src="js/lw5-ui.js"></script>

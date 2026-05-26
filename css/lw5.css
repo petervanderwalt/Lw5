@@ -1,4 +1,6 @@
 :root {
+  --primary: #1a73e8;
+  --primary-hover: #1557b0;
   --bg-primary: #f3f3f3;
   --bg-secondary: #ffffff;
   --bg-tertiary: #f0f0f0;
@@ -219,6 +221,101 @@ a:hover { color: var(--accent-hover); }
   flex: 1;
 }
 
+/* ===== Toolpath Panel (left sidebar) ===== */
+.lw5-tp-panel {
+  width: 220px;
+  min-width: 220px;
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-size: 12px;
+}
+.lw5-tp-header {
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  border-bottom: 1px solid var(--border);
+  font-weight: 600;
+  font-size: 13px;
+  gap: 4px;
+}
+.lw5-tp-header span { flex: 1; }
+.lw5-tp-btn {
+  background: none;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  padding: 2px 6px;
+  cursor: pointer;
+  color: var(--text);
+  font-size: 11px;
+}
+.lw5-tp-btn:hover { background: var(--bg-hover); border-color: var(--border); }
+.lw5-tp-btn-primary {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+.lw5-tp-btn-primary:hover { background: var(--primary-hover); }
+.lw5-tp-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px;
+}
+.lw5-tp-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 6px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  margin-bottom: 2px;
+}
+.lw5-tp-item:hover { background: var(--bg-hover); }
+.lw5-tp-item.active { background: var(--bg-active); }
+.lw5-tp-vis, .lw5-tp-del, .lw5-tp-up, .lw5-tp-down {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+  color: var(--text-muted);
+  font-size: 10px;
+  width: 18px; height: 18px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 3px;
+}
+.lw5-tp-vis:hover, .lw5-tp-del:hover, .lw5-tp-up:hover, .lw5-tp-down:hover { background: var(--bg-hover); color: var(--text); }
+.lw5-tp-del:hover { color: var(--danger); }
+.lw5-tp-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+}
+.lw5-tp-type-icon { font-size: 10px; width: 16px; text-align: center; }
+.lw5-tp-status {
+  font-size: 9px;
+  color: var(--text-muted);
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+.lw5-tp-status.done { color: var(--success); }
+.lw5-tp-status.busy { color: var(--warning); }
+.lw5-tp-empty {
+  text-align: center;
+  padding: 24px 12px;
+  color: var(--text-muted);
+  font-size: 11px;
+}
+.lw5-tp-entity-count {
+  font-size: 9px;
+  color: var(--text-muted);
+  margin-right: 4px;
+}
+
+/* ===== Tool Buttons ===== */
 .lw5-tool-btn {
   width: 36px;
   height: 34px;
@@ -872,6 +969,30 @@ a:hover { color: var(--accent-hover); }
 
 .lw5-empty:hover { border-color: var(--text-muted); }
 
+/* ===== Empty State Overlay ===== */
+.lw5-empty-state {
+  position: absolute; inset: 0; z-index: 20;
+  display: flex; align-items: center; justify-content: center;
+  background: transparent;
+  cursor: default;
+  pointer-events: none;
+}
+.lw5-empty-state-content {
+  text-align: center; color: var(--text-muted);
+  pointer-events: auto;
+  background: color-mix(in srgb, var(--bg-primary) 75%, transparent);
+  padding: 24px 40px;
+  border-radius: var(--radius);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+.lw5-empty-state-content h2 {
+  font-size: 22px; font-weight: 400; margin: 12px 0 6px;
+}
+.lw5-empty-state-content p {
+  font-size: 14px; margin: 0 0 24px; opacity: 0.7;
+}
+
 /* ===== Color Picker ===== */
 .lw5-colorpicker { display: inline-flex; align-items: center; }
 .lw5-colorpicker input[type="color"] { width: 28px; height: 28px; padding: 0; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; }
@@ -974,7 +1095,7 @@ input[type="range"].lw5-slider:focus::-webkit-slider-thumb {
   background: var(--bg-secondary);
   border: none;
   border-radius: var(--radius-lg);
-  width: 780px;
+  width: 520px;
   max-width: 95vw;
   max-height: 90vh;
   display: flex;
@@ -1001,11 +1122,9 @@ input[type="range"].lw5-slider:focus::-webkit-slider-thumb {
   overflow: hidden;
 }
 .lw5-dialog-settings {
-  width: 320px;
-  min-width: 280px;
+  flex: 1;
   padding: 16px;
   overflow-y: auto;
-  border-right: 1px solid var(--border);
   background: var(--bg-primary);
 }
 .lw5-dialog-section { margin-bottom: 16px; }

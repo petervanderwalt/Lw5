@@ -22,6 +22,19 @@ window.LW.cam = {};
     var ClipperLib = window.ClipperLib;
     var mesh = window.LW.mesh;
 
+    var _camCppReady = false;
+    if (typeof Module !== 'undefined') {
+        if (typeof Module._separateTabs === 'function' && typeof Module._vCarve === 'function') {
+            _camCppReady = true;
+        } else {
+            var _origCppInit = Module.onRuntimeInitialized;
+            Module.onRuntimeInitialized = function () {
+                if (_origCppInit) _origCppInit();
+                _camCppReady = true;
+            };
+        }
+    }
+
     // Inline mat3/vec2 replacements (avoid gl-matrix dependency)
     function mat3_fromTranslation(m, v) {
         m[0]=1; m[1]=0; m[2]=0; m[3]=0; m[4]=1; m[5]=0; m[6]=v[0]; m[7]=v[1]; m[8]=1;
@@ -277,15 +290,18 @@ window.LW.cam = {};
 
         var allPaths = [];
         var separated = separateTabs(scan, geometry);
-        for (var i = 1; i < separated.length; i += 2)
-            allPaths.push(separated[i]);
+        if (separated.length === 1)
+            allPaths.push(separated[0]);
+        else
+            for (var i = 1; i < separated.length; i += 2)
+                allPaths.push(separated[i]);
         return mergePaths(null, allPaths);
     }
 
     function vCarve(geometry, cutterAngle, passDepth) {
         if (cutterAngle <= 0 || cutterAngle >= 180)
             return [];
-        if (typeof Module === 'undefined' || typeof Module._vCarve !== 'function') {
+        if (!_camCppReady) {
             if (!window.displayedCppVCarveError) {
                 (typeof showAlert !== 'undefined' ? showAlert : function (m) { console.warn(m); })("Failed to load cam-cpp.js; V-Carve unavailable. This message will not repeat.", "danger", false);
                 window.displayedCppVCarveError = true;
@@ -350,14 +366,13 @@ window.LW.cam = {};
     var displayedCppTabError1 = false;
     var displayedCppTabError2 = false;
 
+    var _showAlert = typeof showAlert !== 'undefined' ? showAlert : function (m) { console.warn(m); };
+
     function separateTabs(cutterPath, tabGeometry) {
         if (tabGeometry.length === 0)
             return [cutterPath];
-        if (typeof Module === 'undefined' || typeof Module._separateTabs !== 'function') {
-            if (!displayedCppTabError1) {
-                showAlert("Failed to load cam-cpp.js; tabs will be missing. This message will not repeat.", "danger", false);
-                displayedCppTabError1 = true;
-            }
+        if (!_camCppReady) {
+            _showAlert("cam-cpp WASM module not loaded — cannot process tabs. Check console for details.", "danger", false);
             return [cutterPath];
         }
 
@@ -381,7 +396,7 @@ window.LW.cam = {};
             [cCutterPath[0], cCutterPath[1], cCutterPath[2], cTabGeometry[0], cTabGeometry[1], cTabGeometry[2], errorRef, resultPathsRef, resultNumPathsRef, resultPathSizesRef]);
 
         if (Module.HEAPU32[errorRef >> 2] && !displayedCppTabError2) {
-            showAlert("Internal error processing tabs; tabs will be missing. This message will not repeat.", "danger", false);
+            _showAlert("Internal error processing tabs; tabs will be missing. This message will not repeat.", "danger", false);
             displayedCppTabError2 = true;
         }
 

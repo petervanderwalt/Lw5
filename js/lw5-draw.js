@@ -6,46 +6,18 @@
 
     var canvas, ctx;
     var animFrameId = null;
-
-    // View transform
-    var view = { ox: 0, oy: 0, zoom: 1 };
-
-    // State
-    var documents = [];
-    var settings = {};
-    var machineBounds = { x: 0, y: 0, w: 400, h: 400, show: true };
-
-    // GCode overlay cache
-    var gcodeOverlayVisible = true;
-    var gcodeCache = { version: 0, rapids: null, bands: {} };
-    var BAND_COLORS = ['#0044ff','#0088ff','#00bbff','#00ddcc','#00ee66','#44dd00','#aadd00','#ffbb00','#ff6600','#ff2200'];
-
-    // Interaction
-    var MODES = { SELECT: 'select', MOVE: 'move', RESIZE: 'resize', ROTATE: 'rotate', TAB: 'tab' };
-    var currentMode = MODES.SELECT;
-    var drawModeChangeCb = null;
-    var selectedIds = [];
-    var hoveredId = null;
-    var isDragging = false;
-    var dragState = null; // { mode:'pan'|'move'|'handle', startMouse, startView, startTransforms, ... }
-
-    // Handle definitions (relative to bounds)
     var HANDLE_SIZE = 8;
-    var HANDLE_NAMES = ['tl', 'tc', 'tr', 'ml', 'mr', 'bl', 'bc', 'br', 'rot'];
+    var hoveredId = null;
 
-    // ---- Init ---------------------------------------------------------------
+    function setCanvasCursorClass(cls) {
+        if (canvas) canvas.style.cursor = cls;
+    }
 
     draw.init = function (c) {
-        if (canvas) return;
         canvas = c;
-        ctx = canvas.getContext('2d', { willReadFrequently: true });
-
-        view.ox = 0;
-        view.oy = 0;
-        view.zoom = 1;
-
+        ctx = canvas.getContext('2d');
         setupInteraction();
-        animFrameId = requestAnimationFrame(render);
+        render();
     };
 
     draw.resize = function (w, h) {
@@ -54,78 +26,72 @@
         canvas.height = h;
     };
 
-    // ---- Camera compat (stub for old code) ----------------------------------
-
-    draw.setCamera = function (cam) {
-        // Not needed for 2D canvas, but kept for compat
-    };
-
-    draw.getCameraState = function () {
-        // Return something approximating camera for status bar
-        return {
-            eye: [view.ox, view.oy, 500 / view.zoom],
-            center: [0, 0, 0],
-            up: [0, 1, 0]
-        };
-    };
-
-    // ---- Public API ---------------------------------------------------------
-
-    function setCanvasCursorClass(cls) {
-        var cursorClasses = ['grabbable', 'grabbing', 'crosshair', 'move', 'default', 'copy'];
-        for (var ci = 0; ci < cursorClasses.length; ci++)
-            canvas.classList.remove(cursorClasses[ci]);
-        canvas.classList.add(cls);
-    }
-
-    draw.setMode = function (mode) {
-        if (!MODES[mode.toUpperCase()]) return;
-        currentMode = mode;
-        setCanvasCursorClass(getCursorClass());
-        if (drawModeChangeCb) drawModeChangeCb(mode);
-    };
-
-    draw.getMode = function () { return currentMode; };
-
-    draw.onModeChange = function (cb) { drawModeChangeCb = cb; };
-
     draw.updateDocuments = function (docs) {
         documents = docs || [];
     };
 
     draw.fitToView = function () {
-        var allBounds = { x1: Infinity, y1: Infinity, x2: -Infinity, y2: -Infinity };
+        if (!documents.length) return;
+        var b = { x1: Infinity, y1: Infinity, x2: -Infinity, y2: -Infinity };
         var found = false;
-        for (var fi = 0; fi < documents.length; fi++) {
-            var d = documents[fi];
-            if (d.visible === false) continue;
-            var b = getDocBounds(d);
-            if (b) {
+        for (var i = 0; i < documents.length; i++) {
+            var db = getDocBounds(documents[i]);
+            if (db) {
                 found = true;
-                allBounds.x1 = Math.min(allBounds.x1, b.x1);
-                allBounds.y1 = Math.min(allBounds.y1, b.y1);
-                allBounds.x2 = Math.max(allBounds.x2, b.x2);
-                allBounds.y2 = Math.max(allBounds.y2, b.y2);
+                b.x1 = Math.min(b.x1, db.x1);
+                b.y1 = Math.min(b.y1, db.y1);
+                b.x2 = Math.max(b.x2, db.x2);
+                b.y2 = Math.max(b.y2, db.y2);
             }
         }
-        if (!found || !canvas) return;
-        var pad = 20;
-        var bw = allBounds.x2 - allBounds.x1 + pad * 2;
-        var bh = allBounds.y2 - allBounds.y1 + pad * 2;
+        if (!found) return;
         var cw = canvas.width, ch = canvas.height;
-        if (bw <= 0 || bh <= 0) return;
-        var zoom = Math.min(cw / bw, ch / bh);
-        if (zoom <= 0) return;
-        view.zoom = zoom;
-        view.ox = -(allBounds.x1 + allBounds.x2) / 2;
-        view.oy = -(allBounds.y1 + allBounds.y2) / 2;
+        if (cw < 2 || ch < 2) return;
+        var pad = 40;
+        var sx = (cw - pad * 2) / (b.x2 - b.x1 || 1);
+        var sy = (ch - pad * 2) / (b.y2 - b.y1 || 1);
+        view.zoom = Math.min(sx, sy);
+        view.ox = -(b.x1 + b.x2) / 2;
+        view.oy = -(b.y1 + b.y2) / 2;
     };
 
+    draw.setMode = function (mode) {
+        currentMode = mode;
+        if (canvas) canvas.style.cursor = getCursorClass();
+    };
+
+    draw.onModeChange = function (cb) {
+        if (typeof cb === 'function') cb(currentMode);
+    };
+
+    // View transform
+    var view = { ox: 0, oy: 0, zoom: 1 };
+
+    // State
+    var documents = [];
+    var settings = {};
+    var selectedIds = [];
+    var currentMode = 'select';
+    var dragState = null;
+    var MODES = { SELECT: 'select', MOVE: 'move', RESIZE: 'resize', ROTATE: 'rotate', TAB: 'tab' };
+    var isDragging = false;
+    var hoveredId = null;
+    var machineBounds = { x: 0, y: 0, w: 400, h: 400, show: true };
+
+    // GCode overlay cache
+    var gcodeOverlayVisible = true;
+    var gcodeCache = { version: 0, rapids: null, bands: {}, plunges: null, zmoves: null };
+
+    draw.setGcodeOverlayVisible = function (v) { gcodeOverlayVisible = v; };
+    draw.isGcodeOverlayVisible = function () { return gcodeOverlayVisible; };
+
     draw.updateGcode = function (segments) {
-        if (!segments) { gcodeCache.rapids = null; gcodeCache.bands = {}; return; }
+        if (!segments) { gcodeCache.rapids = null; gcodeCache.bands = {}; gcodeCache.plunges = null; gcodeCache.zmoves = null; return; }
         gcodeCache.version++;
         gcodeCache.rapids = null;
         gcodeCache.bands = {};
+        gcodeCache.plunges = null;
+        gcodeCache.zmoves = null;
         if (segments.rapids && segments.rapids.length >= 4) {
             var r = segments.rapids;
             gcodeCache.rapids = new Path2D();
@@ -145,10 +111,23 @@
                 gcodeCache.bands[band].lineTo(c[ci + 2], c[ci + 3]);
             }
         }
+        if (segments.plunges && segments.plunges.length >= 6) {
+            var p = segments.plunges;
+            gcodeCache.plunges = new Path2D();
+            for (var pi = 0; pi < p.length; pi += 6) {
+                gcodeCache.plunges.moveTo(p[pi], p[pi + 1]);
+                gcodeCache.plunges.lineTo(p[pi + 2], p[pi + 3]);
+            }
+        }
+        if (segments.zmoves && segments.zmoves.length >= 6) {
+            var zm = segments.zmoves;
+            gcodeCache.zmoves = new Path2D();
+            for (var zi = 0; zi < zm.length; zi += 6) {
+                gcodeCache.zmoves.moveTo(zm[zi], zm[zi + 1]);
+                gcodeCache.zmoves.lineTo(zm[zi + 2], zm[zi + 3]);
+            }
+        }
     };
-
-    draw.setGcodeOverlayVisible = function (v) { gcodeOverlayVisible = v; };
-    draw.isGcodeOverlayVisible = function () { return gcodeOverlayVisible; };
 
     draw.updateWorkspace = function (s) {
         settings = s || {};
@@ -208,6 +187,7 @@
         if (machineBounds.show) drawMachineBounds();
         drawDocuments();
         if (gcodeOverlayVisible && (gcodeCache.rapids || Object.keys(gcodeCache.bands).length)) drawGcodeOverlay();
+        if (gcodeOverlayVisible) drawToolpathOverlay();
 
         ctx.restore();
 
@@ -228,6 +208,15 @@
         var maxX = -view.ox + w / 2 / view.zoom + 10;
         var minY = -view.oy - h / 2 / view.zoom - 10;
         var maxY = -view.oy + h / 2 / view.zoom + 10;
+
+        // Clip grid to machine bounds if visible
+        var clipGrid = machineBounds.show;
+        if (clipGrid) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.rect(machineBounds.x, machineBounds.y - machineBounds.h, machineBounds.w, machineBounds.h);
+            ctx.clip();
+        }
 
         var minor = (settings.toolGridMinorSpacing || 10) * view.zoom;
         var major = (settings.toolGridMajorSpacing || 50) * view.zoom;
@@ -271,19 +260,55 @@
             ctx.stroke();
         }
 
-        // Origin axes
+        // Origin axes + ruler ticks (inside clip)
+        var tickSize = 6 / view.zoom;
+        var tickSpacing = 10;
+        var labelOff = 14 / view.zoom;
+        ctx.lineWidth = 1.5 / view.zoom;
+        ctx.font = Math.max(8, 10 / view.zoom) + 'px monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'top';
+
+        // Y-axis (red vertical line at x=0)
         ctx.strokeStyle = 'rgba(255,60,60,0.5)';
-        ctx.lineWidth = 2 / view.zoom;
         ctx.beginPath();
         ctx.moveTo(0, minY);
         ctx.lineTo(0, maxY);
         ctx.stroke();
+        // Ticks & labels: extend leftward from red line
+        ctx.fillStyle = 'rgba(200,50,50,0.7)';
+        ctx.strokeStyle = 'rgba(200,50,50,0.7)';
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'middle';
+        for (var ty = Math.ceil(minY / tickSpacing) * tickSpacing; ty <= maxY; ty += tickSpacing) {
+            if (ty === 0) continue;
+            ctx.beginPath();
+            ctx.moveTo(0, ty);
+            ctx.lineTo(-tickSize, ty);
+            ctx.stroke();
+            ctx.fillText(Math.round(ty) + '', -tickSize - 3 / view.zoom, ty);
+        }
 
+        // X-axis (green horizontal line at y=0)
         ctx.strokeStyle = 'rgba(60,255,60,0.5)';
+        ctx.fillStyle = 'rgba(50,200,50,0.7)';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'top';
         ctx.beginPath();
         ctx.moveTo(minX, 0);
         ctx.lineTo(maxX, 0);
         ctx.stroke();
+        // Ticks & labels: extend downward from green line
+        for (var tx = Math.ceil(minX / tickSpacing) * tickSpacing; tx <= maxX; tx += tickSpacing) {
+            if (tx === 0) continue;
+            ctx.beginPath();
+            ctx.moveTo(tx, 0);
+            ctx.lineTo(tx, tickSize);
+            ctx.stroke();
+            ctx.fillText(Math.round(tx) + '', tx, tickSize + 2 / view.zoom);
+        }
+
+        if (clipGrid) ctx.restore();
     }
 
     // ---- Machine Bounds -----------------------------------------------------
@@ -291,17 +316,18 @@
     function drawMachineBounds() {
         var x = machineBounds.x, y = machineBounds.y;
         var w = machineBounds.w, h = machineBounds.h;
+        // Rectangle extends upward from y (negative Y direction on canvas = up)
         ctx.fillStyle = 'rgba(0,0,0,0.02)';
-        ctx.fillRect(x, y, w, h);
+        ctx.fillRect(x, y - h, w, h);
         ctx.strokeStyle = 'rgba(0,0,0,0.15)';
         ctx.lineWidth = 1.5 / view.zoom;
-        ctx.strokeRect(x, y, w, h);
+        ctx.strokeRect(x, y - h, w, h);
 
         // Corner L-brackets (brighter)
         var m = 10 / view.zoom;
         ctx.strokeStyle = 'rgba(0,0,0,0.25)';
         ctx.lineWidth = 2 / view.zoom;
-        var corners = [[x, y], [x + w, y], [x + w, y + h], [x, y + h]];
+        var corners = [[x, y - h], [x + w, y - h], [x + w, y], [x, y]];
         var dirs = [[1, 1], [-1, 1], [-1, -1], [1, -1]];
         for (var ci = 0; ci < 4; ci++) {
             var p = corners[ci], dx = dirs[ci][0], dy = dirs[ci][1];
@@ -312,13 +338,13 @@
             ctx.stroke();
         }
 
-        // Dimension label in bottom-right corner
-        var label = Math.round(w) + ' × ' + Math.round(h) + ' mm';
-        ctx.fillStyle = 'rgba(0,0,0,0.35)';
-        ctx.font = Math.max(10, 12 / view.zoom) + 'px monospace';
+        // Dimension label below bottom edge
+        var label = Math.round(w) + ' \u00d7 ' + Math.round(h) + ' mm';
+        ctx.fillStyle = 'rgba(0,0,0,0.30)';
+        ctx.font = Math.max(9, 11 / view.zoom) + 'px monospace';
         ctx.textAlign = 'right';
-        ctx.textBaseline = 'bottom';
-        ctx.fillText(label, x + w - 4 / view.zoom, y + h - 4 / view.zoom);
+        ctx.textBaseline = 'top';
+        ctx.fillText(label, x + w, y + 6 / view.zoom);
     }
 
     // ---- Rulers -------------------------------------------------------------
@@ -442,40 +468,7 @@
         var isHov = hoveredId === doc.id;
 
         // Resolve toolpath display color
-        function getToolpathColor(d) {
-            var tp = d.toolpath;
-            if (!tp || !tp.type) return '#999';
-            switch (tp.type) {
-                case 'cut_on_line':
-                case 'laser_cut':
-                    return '#e81123';
-                case 'cut_outside':
-                case 'laser_cut_outside':
-                    return '#0078d4';
-                case 'cut_inside':
-                case 'laser_cut_inside':
-                    return '#ffb900';
-                case 'pocket':
-                case 'laser_fill':
-                    return '#107c10';
-                case 'mill_pocket':
-                    return '#8b4513';
-                case 'mill_cut':
-                case 'mill_cut_inside':
-                case 'mill_cut_outside':
-                    return '#d2691e';
-                case 'mill_vcarve':
-                    return '#a0522d';
-                case 'raster':
-                    return '#881798';
-                case 'raster_merge':
-                    return '#cc33cc';
-                case 'none':
-                    return d.strokeColor || '#999';
-                default:
-                    return '#666666';
-            }
-        }
+        function getToolpathColor() { return '#000000'; }
 
         ctx.save();
         ctx.transform(tf[0], tf[1], tf[2], tf[3], tf[4], tf[5]);
@@ -665,6 +658,11 @@
     }
 
     function drawGcodeOverlay() {
+        ctx.lineWidth = 0.12;
+        ctx.strokeStyle = '#cc0000';
+        for (var b in gcodeCache.bands) {
+            ctx.stroke(gcodeCache.bands[b]);
+        }
         if (gcodeCache.rapids) {
             ctx.save();
             ctx.strokeStyle = '#999';
@@ -674,11 +672,33 @@
             ctx.setLineDash([]);
             ctx.restore();
         }
+    }
+
+    function drawToolpathOverlay() {
+        var toolpaths = typeof LW.getToolpaths === 'function' ? LW.getToolpaths() : [];
+        if (!toolpaths || !toolpaths.length) return;
+        var scale = 1 / (50000000);
+        if (LW.mesh && LW.mesh.mmToClipperScale) scale = 1 / LW.mesh.mmToClipperScale;
+        ctx.save();
         ctx.lineWidth = 0.12;
-        for (var b in gcodeCache.bands) {
-            ctx.strokeStyle = BAND_COLORS[parseInt(b)];
-            ctx.stroke(gcodeCache.bands[b]);
+        ctx.strokeStyle = '#cc0000';
+        for (var ti = 0; ti < toolpaths.length; ti++) {
+            var tp = toolpaths[ti];
+            if (tp.visible === false) continue;
+            if (!tp.computed || !tp.computed.camPaths) continue;
+            var camPaths = tp.computed.camPaths;
+            for (var pi = 0; pi < camPaths.length; pi++) {
+                var pp = camPaths[pi].path;
+                if (!pp || !pp.length) continue;
+                ctx.beginPath();
+                ctx.moveTo(pp[0].X * scale, pp[0].Y * scale);
+                for (var pj = 1; pj < pp.length; pj++) {
+                    ctx.lineTo(pp[pj].X * scale, pp[pj].Y * scale);
+                }
+                ctx.stroke();
+            }
         }
+        ctx.restore();
     }
 
     function drawLegend(w, h) {
@@ -687,11 +707,20 @@
             { label: 'Cut outside', color: '#0078d4' },
             { label: 'Cut inside', color: '#ffb900' },
             { label: 'Fill / Pocket', color: '#107c10' },
+            { label: 'Hatch Fill', color: '#2e8b57' },
+            { label: 'Cross Hatch', color: '#3cb371' },
+            { label: 'Spiral Fill', color: '#20b2aa' },
+            { label: 'Concentric Fill', color: '#48d1cc' },
+            { label: 'Stipple', color: '#66cdaa' },
             { label: 'Mill Pocket', color: '#8b4513' },
             { label: 'Mill Cut', color: '#d2691e' },
             { label: 'Mill V-Carve', color: '#a0522d' },
+            { label: 'Mill Hatch', color: '#cd853f' },
             { label: 'Raster', color: '#881798' },
             { label: 'Raster Merge', color: '#cc33cc' },
+            { label: 'Mill Halftone', color: '#9932cc' },
+            { label: 'Mill Wavy', color: '#8b008b' },
+            { label: 'Mill Heightmap', color: '#9400d3' },
             { label: 'Engrave', color: '#666666' },
             { label: 'None', color: '#999999' }
         ];
@@ -922,6 +951,7 @@
         canvas.addEventListener('wheel', onWheel, { passive: false });
         canvas.addEventListener('dblclick', onDoubleClick);
         canvas.addEventListener('keydown', onKeyDown);
+        canvas.addEventListener('contextmenu', function (e) { if (e.button === 1) e.preventDefault(); });
         canvas.addEventListener('touchstart', onTouchStart, { passive: false });
         canvas.addEventListener('touchmove', onTouchMove, { passive: false });
         canvas.addEventListener('touchend', onTouchEnd, { passive: false });
@@ -1005,6 +1035,19 @@
     function onMouseDown(e) {
         var pos = getMousePos(e);
 
+        // Middle mouse button: pan
+        if (e.button === 1) {
+            e.preventDefault();
+            isDragging = true;
+            dragState = {
+                mode: 'pan',
+                startMouse: pos,
+                startView: { ox: view.ox, oy: view.oy }
+            };
+            setCanvasCursorClass('grabbing');
+            return;
+        }
+
         // TAB mode: place a tab (bridge) on the clicked vector
         if (currentMode === MODES.TAB) {
             var hit = hitTest(pos.x, pos.y);
@@ -1015,9 +1058,9 @@
                 var world = canvasToWorld(pos.x, pos.y);
                 tp.tabs.push({ x: world[0], y: world[1], width: 3 });
                 LW.dispatch({ type: 'DOCUMENT_UPDATE', payload: { id: hit.id, changes: { toolpath: tp } } });
-                ui.showToast('Tab placed on ' + (hit.name || 'vector'), 'success');
+                LW.ui.showToast('Tab placed on ' + (hit.name || 'vector'), 'success');
             } else {
-                ui.showToast('Click on a vector to place a tab', 'info');
+                LW.ui.showToast('Click on a vector to place a tab', 'info');
             }
             return;
         }
@@ -1050,16 +1093,17 @@
         // Check document hits
         var hit = hitTest(pos.x, pos.y);
         if (hit) {
-            if (selectedIds.indexOf(hit.id) >= 0 && selectedIds.length > 1 && e.shiftKey) {
+            var ctrl = e.ctrlKey || e.metaKey;
+            if (selectedIds.indexOf(hit.id) >= 0 && selectedIds.length > 1 && ctrl) {
                 // Remove from selection
                 selectedIds = selectedIds.filter(function (id) { return id !== hit.id; });
                 syncSelection();
                 return;
             }
-            if (selectedIds.indexOf(hit.id) < 0 && !e.shiftKey) {
+            if (selectedIds.indexOf(hit.id) < 0 && !ctrl) {
                 selectedIds = [hit.id];
                 syncSelection();
-            } else if (selectedIds.indexOf(hit.id) < 0 && e.shiftKey) {
+            } else if (selectedIds.indexOf(hit.id) < 0 && ctrl) {
                 selectedIds.push(hit.id);
                 syncSelection();
             }
@@ -1073,7 +1117,7 @@
                 };
             }
         } else {
-            if (!e.shiftKey) {
+            if (!(e.ctrlKey || e.metaKey)) {
                 selectedIds = [];
                 syncSelection();
             }
@@ -1155,7 +1199,7 @@
         e.preventDefault();
         var pos = getMousePos(e);
         var delta = e.deltaY > 0 ? 0.9 : 1.1;
-        var newZoom = Math.max(0.05, Math.min(50, view.zoom * delta));
+        var newZoom = Math.max(0.01, Math.min(50, view.zoom * delta));
         // Zoom toward mouse position
         var world = canvasToWorld(pos.x, pos.y);
         view.ox = (pos.x - canvas.width / 2) / newZoom - world[0];

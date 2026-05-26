@@ -4,6 +4,9 @@
   "description": "LaserWeb5 - CAM application for laser cutters, engravers, and CNC machines",
   "private": true,
   "license": "AGPL-3.0",
+  "scripts": {
+    "test": "node tests/test-mill-ops.js"
+  },
   "dependencies": {
     "three": "^0.128.0"
   }
